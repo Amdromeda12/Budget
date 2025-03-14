@@ -1,0 +1,15 @@
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\bin\Debug\net9.0-windows\Budget.exe
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\bin\Debug\net9.0-windows\Budget.deps.json
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\bin\Debug\net9.0-windows\Budget.runtimeconfig.json
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\bin\Debug\net9.0-windows\Budget.dll
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\bin\Debug\net9.0-windows\Budget.pdb
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\Budget.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\Budget.AssemblyInfoInputs.cache
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\Budget.AssemblyInfo.cs
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\Budget.csproj.CoreCompileInputs.cache
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\Budget.sourcelink.json
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\Budget.dll
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\refint\Budget.dll
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\Budget.pdb
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\Budget.genruntimeconfig.cache
+C:\Users\Dennis Wiklund\Desktop\Project\Budget\obj\Debug\net9.0-windows\ref\Budget.dll
