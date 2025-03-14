@@ -1,65 +1,15 @@
-# Visual Studio Specific
-.vs/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# Build results
-[Bb]in/
-[Oo]bj/
+# Ignore build and debug output
+bin/
+obj/
 Debug/
+Release/
 *.exe
 *.dll
 *.pdb
-*.log
-*.cache
-*.ilk
-*.ipch
-*.aps
-*.ncb
-*.obj
-*.pch
-*.res
-*.resources
-*.tlb
-*.tlh
-*.tli
-*.log
-*.sdf
-*.suo
-*.sln.ide
-*.tmp
-*.vspscc
-*.vssscc
 
-# Rider / JetBrains
+# Ignore Visual Studio and Rider files
+.vs/
 .idea/
-*.sln.iml
-
-# NuGet
-*.nupkg
-*.snupkg
-packages/
-.nuget/
-project.lock.json
-project.assets.json
-# If using package restore, include the following:
-!packages/**/*.dll
-!packages/**/*.pdb
-!packages/**/*.xml
-
-# Entity Framework
-Migrations/
-
-# Windows Forms Designer
-*.Designer.cs
-
-# Debugging
-*.tlog
-*.lastcodeanalysissucceeded
-*.psess
-*.vsp
-
-# Publish Output
-publish/
+*.suo
+*.user
+*.csproj.user
