@@ -7,7 +7,7 @@ public partial class Form1 : Form
     public Form1()
     {
         //Själva fönstret
-        Text = "Budget";
+        Text = "Budget";            //Gör som fönstret visar namnet???
         this.FormBorderStyle = FormBorderStyle.None;
         this.Size = new Size(1800, 1000);
         StartPosition = FormStartPosition.CenterScreen;
@@ -40,7 +40,6 @@ public partial class Form1 : Form
 
         topBar.Controls.Add(closeButton);
         topBar.Controls.Add(minimizeButton);
-
         //
 
         // Main Content Panel (Right Side)
@@ -58,7 +57,6 @@ public partial class Form1 : Form
         contentWrapper.Dock = DockStyle.Fill;
 
         // TOP Panel (container for all panel pairs)
-        
         FlowLayoutPanel container = new FlowLayoutPanel();
         container.FlowDirection = FlowDirection.LeftToRight;
         container.Height = 290;
@@ -139,7 +137,7 @@ public partial class Form1 : Form
     {
         if (e.Button == MouseButtons.Left)
         {
-            MessageBox.Show("Test1");
+            MessageBox.Show("Test1");       //Ändra så man kan dra själva fönstret
         }
     }
 
@@ -153,7 +151,16 @@ public partial class Form1 : Form
         }
 
         clickedButton.FlatAppearance.BorderSize = 3; 
-        clickedButton.FlatAppearance.BorderColor = Color.Yellow; // Highlight color
+        clickedButton.FlatAppearance.BorderColor = Color.Yellow;
+
+        if(clickedButton.Name.Contains("bB"))           //Dessa ska visa Databasen istället för att byta färg
+        {
+            bottomMain.BackColor = Color.DarkRed;
+        }
+        else
+        {
+            bottomMain.BackColor = Color.AliceBlue;
+        }
 
         previousButton = clickedButton;
     }
