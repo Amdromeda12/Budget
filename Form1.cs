@@ -67,6 +67,9 @@ public partial class Form1 : Form
         container.WrapContents = false;
         container.Padding = new Padding(10);
 
+        string[] months = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", 
+                    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+
         for (int i = 0; i < 12; i++)
         {
             // Parent panel to hold both big and small panels
@@ -75,23 +78,25 @@ public partial class Form1 : Form
             parentPanel.Height = 270;
             parentPanel.Margin = new Padding(9, 1, 9, 1);
 
+            //Big button
             Button bigButton = new Button();
             bigButton.Name = "bB"+i;
-            bigButton.Text = "Big Button " + (i + 1);
             bigButton.BackColor = Color.DarkMagenta;
             bigButton.ForeColor = Color.Honeydew;
             bigButton.Dock = DockStyle.Top;
             bigButton.Height = 200;
             bigButton.MouseClick += ButtonClick;
 
+            bigButton.FlatStyle = FlatStyle.Flat;
+            bigButton.FlatAppearance.BorderSize = 0;
 
+            bigButton.Text = months[i];
+            bigButton.Font = new Font("Arial", 22, FontStyle.Bold);
+            bigButton.TextAlign = ContentAlignment.TopCenter;
+
+            //Small button
             Button smallButton = new Button();
             smallButton.Name = "sB"+i;
-            smallButton.Text = "Small Button " + (i + 1);
-            smallButton.Dock = DockStyle.Bottom;
-            smallButton.Height = 50;
-            smallButton.MouseClick += ButtonClick;
-
             if (i % 3 == 0)
             {
                 smallButton.BackColor = Color.Red;
@@ -100,8 +105,15 @@ public partial class Form1 : Form
             {
                 smallButton.BackColor = Color.SkyBlue;
             }
+            smallButton.Dock = DockStyle.Bottom;
+            smallButton.Height = 50;
+            smallButton.MouseClick += ButtonClick;
 
+            smallButton.FlatStyle = FlatStyle.Flat;
+            smallButton.FlatAppearance.BorderSize = 0;
+            smallButton.Text = "Small Button " + (i + 1);
 
+            //Add to parent
             parentPanel.Controls.Add(bigButton);
             parentPanel.Controls.Add(smallButton);
             container.Controls.Add(parentPanel);
@@ -131,14 +143,18 @@ public partial class Form1 : Form
         }
     }
 
+    private Button previousButton = null;
     private void ButtonClick(object sender, MouseEventArgs e)
     {
         Button clickedButton = sender as Button;
-        if(clickedButton.Name.Contains("bB")){
-            bottomMain.BackColor = Color.Red;
+        if (previousButton != null)
+        {
+            previousButton.FlatAppearance.BorderSize = 0;
         }
-        else{
-            bottomMain.BackColor = Color.Blue;
-        }
+
+        clickedButton.FlatAppearance.BorderSize = 3; 
+        clickedButton.FlatAppearance.BorderColor = Color.Yellow; // Highlight color
+
+        previousButton = clickedButton;
     }
 }
