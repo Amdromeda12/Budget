@@ -5,9 +5,9 @@ using Database.DatabaseConnection;
 namespace Budget;
 public partial class Form1 : Form
 {
-    private Panel topBar;
+    Panel topBar;
     private Panel bottomMain;
-    /*
+    /*private
     public Month Jan = new Month {Name = "Jan", Car = 100, House = 50};
     public Month Feb = new Month {Name = "Feb", Car = 20, House = 1700};
     */

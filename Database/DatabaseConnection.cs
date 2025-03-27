@@ -4,6 +4,26 @@ using System.Data.SQLite;
 namespace Database.DatabaseConnection;
 internal class DatabaseConnection
 {
+
+/*
+    CREATE TABLE IF NOT EXISTS Year (
+        Id INTEGER PRIMARY KEY,
+        Year_Number INTEGER UNIQUE  -- Ensures we don't have duplicate years
+    );
+
+    CREATE TABLE IF NOT EXISTS Month (
+        Id INTEGER PRIMARY KEY,                     1
+        Name TEXT,                                  Jan
+        Year_Id INTEGER,  -- Links month to a specific year         1991
+        Car INTEGER,                        5
+        House INTEGER,                      5
+        UNIQUE(Name, Year_Id),  -- Ensures each month is unique within a year
+        FOREIGN KEY (Year_Id) REFERENCES Year(Id) ON DELETE CASCADE
+    );
+*/
+
+
+
     //                                          KOLLA GENOM DETTA OCH GÖR OM DET, DETTA ÄR TEST KOD
     public static void InitializeDatabase()
     {
