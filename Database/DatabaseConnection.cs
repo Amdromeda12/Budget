@@ -16,7 +16,7 @@ internal class DatabaseConnection
         Name TEXT,                                  Jan
         Year_Id INTEGER,  -- Links month to a specific year         1991
         Car INTEGER,                        5
-        House INTEGER,                      5
+        House INTEGER,                         5
         UNIQUE(Name, Year_Id),  -- Ensures each month is unique within a year
         FOREIGN KEY (Year_Id) REFERENCES Year(Id) ON DELETE CASCADE
     );
