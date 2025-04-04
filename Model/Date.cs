@@ -1,6 +1,7 @@
 public class Month
 {
     public string? Name { get; set; }
+    public int Year_Id { get; set; }
     public int Car { get; set; }
     public int House { get; set; }
     public Month(string name, int car, int house)
@@ -9,4 +10,9 @@ public class Month
         Car = car;
         House = house;
     }
+}
+public class Year
+{
+    public string Id;
+    public int Year_Number;
 }

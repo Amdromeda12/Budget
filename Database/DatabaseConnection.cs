@@ -4,27 +4,7 @@ using System.Data.SQLite;
 namespace Database.DatabaseConnection;
 internal class DatabaseConnection
 {
-
-/*
-    CREATE TABLE IF NOT EXISTS Year (
-        Id INTEGER PRIMARY KEY,
-        Year_Number INTEGER UNIQUE  -- Ensures we don't have duplicate years
-    );
-
-    CREATE TABLE IF NOT EXISTS Month (
-        Id INTEGER PRIMARY KEY,                     1
-        Name TEXT,                                  Jan
-        Year_Id INTEGER,  -- Links month to a specific year         1991
-        Car INTEGER,                        5
-        House INTEGER,                         5
-        UNIQUE(Name, Year_Id),  -- Ensures each month is unique within a year
-        FOREIGN KEY (Year_Id) REFERENCES Year(Id) ON DELETE CASCADE
-    );
-*/
-
-
-
-    //                                          KOLLA GENOM DETTA OCH GÖR OM DET, DETTA ÄR TEST KOD
+    //KOLLA GENOM DETTA OCH GÖR OM DET, DETTA ÄR TEST KOD
     public static void InitializeDatabase()
     {
         string connectionString = "Data Source=Budget.db;Version=3;";
@@ -32,30 +12,44 @@ internal class DatabaseConnection
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = "CREATE TABLE IF NOT EXISTS Month (Id INTEGER PRIMARY KEY, Name TEXT, Car INTEGER, House INTEGER)";
+            string sql = @"
+                CREATE TABLE IF NOT EXISTS Year (
+                    Id INTEGER PRIMARY KEY,
+                    Year_Number INTEGER UNIQUE
+                );
+
+                CREATE TABLE IF NOT EXISTS Month (
+                    Id INTEGER PRIMARY KEY,
+                    Name TEXT NOT NULL,
+                    Year_Id INTEGER,
+                    Car INTEGER,
+                    House INTEGER,
+                    UNIQUE(Name, Year_Id),
+                    FOREIGN KEY (Year_Id) REFERENCES Year(Id) ON DELETE CASCADE
+                );";
             using (SQLiteCommand command = new SQLiteCommand(sql, conn))
             {
                 command.ExecuteNonQuery();
             }
-            Console.WriteLine("Database and table created successfully!");
         }
     }
-    public static void InsertMonth(string name, int car, int house)
+
+    public static void InsertMonth(string name, int Year_Id, int car, int house)
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = "INSERT INTO month (Name, Car, House) VALUES (@name, @car, @house)";
+            string sql = "INSERT INTO month (Name, Year_Id, Car, House) VALUES (@name, @Year_Id, @car, @house)";
             using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@name", name);
+                cmd.Parameters.AddWithValue("@Year_Id", Year_Id);
                 cmd.Parameters.AddWithValue("@car", car);
                 cmd.Parameters.AddWithValue("@house", house);
                 cmd.ExecuteNonQuery();
             }
         }
-        Console.WriteLine($"Inserted: {name}, Car: {car}, House: {house}");
     }
 
     public static void DisplayMonths()
