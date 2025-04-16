@@ -1,14 +1,15 @@
 using System;
 using System.Data.SQLite;
+using Microsoft.VisualBasic;
 
 namespace Database.DatabaseConnection;
 internal class DatabaseConnection
 {
-    //KOLLA GENOM DETTA OCH GÖR OM DET, DETTA ÄR TEST KOD
-    public static void InitializeDatabase()
+    //Kolla genom dessa och gör dom bättre
+    public static void InitializeDatabase() //Funkar
     {
         string connectionString = "Data Source=Budget.db;Version=3;";
-    
+
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
@@ -21,11 +22,11 @@ internal class DatabaseConnection
                 CREATE TABLE IF NOT EXISTS Month (
                     Id INTEGER PRIMARY KEY,
                     Name TEXT NOT NULL,
-                    Year_Id INTEGER,
+                    year_Id INTEGER,
                     Car INTEGER,
                     House INTEGER,
-                    UNIQUE(Name, Year_Id),
-                    FOREIGN KEY (Year_Id) REFERENCES Year(Id) ON DELETE CASCADE
+                    UNIQUE(Name, year_Id),
+                    FOREIGN KEY (year_Id) REFERENCES Year(Id) ON DELETE CASCADE
                 );";
             using (SQLiteCommand command = new SQLiteCommand(sql, conn))
             {
@@ -34,54 +35,81 @@ internal class DatabaseConnection
         }
     }
 
-    public static void InsertMonth(string name, int Year_Id, int car, int house)
+    public static void InsertMonth(string name, int year_Id, int car, int house)
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = "INSERT INTO month (Name, Year_Id, Car, House) VALUES (@name, @Year_Id, @car, @house)";
+            string sql = "INSERT INTO month (Name, year_Id, Car, House) VALUES (@name, @year_Id, @car, @house)";    //TODO: Fixa denna
             using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@Year_Id", Year_Id);
+                cmd.Parameters.AddWithValue("@year_Id", year_Id);
                 cmd.Parameters.AddWithValue("@car", car);
                 cmd.Parameters.AddWithValue("@house", house);
                 cmd.ExecuteNonQuery();
             }
         }
     }
-
-    public static void DisplayMonths()
+    public static void InsetYear(int Year_Number)
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = "SELECT * FROM month";
+            string sql = "INSERT INTO Year (Year_Number) VALUES (@Year_Number)";
             using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
-            using (SQLiteDataReader reader = cmd.ExecuteReader())
             {
-                Console.WriteLine("\nDatabase Records:");
-                while (reader.Read())
-                {
-                    Console.WriteLine($"Name: {reader["Name"]}, Car: {reader["Car"]}, House: {reader["House"]}");
-                }
+                cmd.Parameters.AddWithValue("@Year_Number", Year_Number);
+                cmd.ExecuteNonQuery();
             }
         }
-
     }
 
-    public static Month GetMonthData(string monthName)
+    public static void DisplayMonths(ComboItem date)
+    {
+        string connectionString = "Data Source=Budget.db;Version=3;";
+        string monthsList = $"Months in {date.Text}:\n";                //TODO: VIKTIGT VIKTIGT DENNA FIXAR KNAPPAR BARA HITTA KNAPP+MÅNAD SOM "bBJan" OCH ÄNDRA BACKGRUND BORDE FUNKA!!!!!!
+
+        using (SQLiteConnection conn = new SQLiteConnection(connectionString))
+        {
+            conn.Open();
+            string sql = $@"SELECT Name FROM Month WHERE year_Id = {date.Text};";
+
+            using (SQLiteCommand command = new SQLiteCommand(sql, conn))
+            {
+                command.Parameters.AddWithValue("@YearId", date);
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        monthsList += reader["Name"].ToString() + "\n";
+                    }
+                }
+            }
+            string b = "";
+            foreach (var s in monthsList)
+            {
+                b += s;
+                
+            }
+            MessageBox.Show(b);
+        }
+    }
+
+    public static Month GetMonthData(string year, string month)
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = "SELECT * FROM month WHERE Name = @name";
+            string sql = "SELECT * FROM month WHERE year_Id = @name AND Name = @date";
             using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
             {
-                cmd.Parameters.AddWithValue("@name", monthName);
+                cmd.Parameters.AddWithValue("@name", year);
+                cmd.Parameters.AddWithValue("@date", month);
+
                 using (SQLiteDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
@@ -97,5 +125,26 @@ internal class DatabaseConnection
         }
         return null; // No data found
     }
-    //
+    public static List<string> GetYearData()
+    {
+        List<string> years = new List<string>();
+        string connectionString = "Data Source=budget.db;Version=3;";
+
+        using (SQLiteConnection conn = new SQLiteConnection(connectionString))
+        {
+            conn.Open();
+            string sql = "SELECT DISTINCT Year_Number FROM year";
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
+            {
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        years.Add(reader["Year_Number"].ToString());
+                    }
+                }
+            }
+        }
+        return years;
+    }
 }
