@@ -3,8 +3,10 @@ using System.Data.SQLite;
 using Microsoft.VisualBasic;
 
 namespace Database.DatabaseConnection;
-internal class DatabaseConnection
+public class DatabaseConnection
 {
+    public static List<string> Months { get; set; } = new List<string>();
+
     //Kolla genom dessa och gör dom bättre
     public static void InitializeDatabase() //Funkar
     {
@@ -70,7 +72,8 @@ internal class DatabaseConnection
     public static void DisplayMonths(ComboItem date)
     {
         string connectionString = "Data Source=Budget.db;Version=3;";
-        string monthsList = $"Months in {date.Text}:\n";                //TODO: VIKTIGT VIKTIGT DENNA FIXAR KNAPPAR BARA HITTA KNAPP+MÅNAD SOM "bBJan" OCH ÄNDRA BACKGRUND BORDE FUNKA!!!!!!
+        //string monthsList = $"Months in {date.Text}:\n";                //TODO: VIKTIGT VIKTIGT DENNA FIXAR KNAPPAR BARA HITTA KNAPP+MÅNAD SOM "bBJan" OCH ÄNDRA BACKGRUND BORDE FUNKA!!!!!!
+
 
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
@@ -82,19 +85,19 @@ internal class DatabaseConnection
                 command.Parameters.AddWithValue("@YearId", date);
                 using (SQLiteDataReader reader = command.ExecuteReader())
                 {
+                    Months.Clear();
                     while (reader.Read())
                     {
-                        monthsList += reader["Name"].ToString() + "\n";
+                        //monthsList += reader["Name"].ToString() + "\n";
+                        Months.Add(reader["Name"].ToString());
                     }
                 }
             }
-            string b = "";
-            foreach (var s in monthsList)
-            {
-                b += s;
-                
-            }
-            MessageBox.Show(b);
+
+            // foreach (var mon in Months)
+            // {
+            //     MessageBox.Show(mon);
+            // }
         }
     }
 

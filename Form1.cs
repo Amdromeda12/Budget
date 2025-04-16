@@ -21,6 +21,9 @@ public partial class Form1 : Form
         design.minimizeButton.Click += minimizeButtonPressed;
         design.dropdown1.SelectedIndexChanged += DropDownChanged;
         design.dropdown2.SelectedIndexChanged += DropDownChanged;
+        this.MouseDown += TopBar_MouseDown;
+        this.MouseMove += mainForm_MouseMove;
+        this.MouseUp += mainForm_MouseUp;
 
         foreach (Button btn in design.BigButtons)
         {
@@ -45,7 +48,7 @@ public partial class Form1 : Form
     private void MonthButton(object sender, EventArgs e)
     {
         //En "DeSelect" if sats om den redan är "Selected"
-        //En still PieChart om det är 2 "Selected"
+        //En till PieChart om det är 2 "Selected"
         Button clickedButton = sender as Button;
         bool isSpecial = clickedButton.Name.Contains("sB");
 
@@ -94,33 +97,76 @@ public partial class Form1 : Form
         design.chart1.Invalidate();
     }
 
-    //Tänka på denna "Under"
     private void DropDownChanged(object sender, EventArgs e)
     {
         ComboBox cmb = (ComboBox)sender;
-        bool isSpecial = cmb.Name.Contains("dropdown2");
+        bool dropdown2 = cmb.Name.Contains("dropdown2");
 
         int selectedIndex = cmb.SelectedIndex;
-        ComboItem selectedValue = (ComboItem)cmb.SelectedValue;     //Funkar
+        ComboItem selectedValue = (ComboItem)cmb.SelectedValue;
         DatabaseConnection.DisplayMonths(selectedValue);
 
-        //Någonstans här, Läs in vilka månader som har något i sig.
-        //Ändra färg på alla knappar på ett bra sätt
-
-        if (isSpecial) { currentYear2 = selectedValue.Text; }
+        if (dropdown2) { currentYear2 = selectedValue.Text; }
         else
         {
-            currentYear = selectedValue.Text;   //Rätt funtion
+            currentYear = selectedValue.Text;
+        }
+        UpdateButtonColor(dropdown2);
+
+    }
+
+    private void UpdateButtonColor(bool dropdown2)          //TODO: jämnför olika årens totala kostnad och ändra färg utifrån det
+    {
+        var targetButtons = dropdown2 ? design.SmallButtons : design.BigButtons;
+        var defaultColor = Color.White;
+        var highlightColor = dropdown2 ? Color.Red : Color.Blue;
+        var buttonPrefix = dropdown2 ? "sB" : "bB";
+
+        foreach (var button in targetButtons)
+        {
+            button.BackColor = defaultColor;
+            button.Enabled = false;
+        }
+
+        foreach (var month in DatabaseConnection.Months)
+        {
+            var targetName = buttonPrefix + month;
+            var button = targetButtons.FirstOrDefault(b => b.Name == targetName);
+            if (button != null)
+            {
+                button.Enabled = true;
+
+                button.BackColor = highlightColor;
+            }
         }
     }
 
+    //  Window Drag
+    private bool dragging = false;
+    private Point startPoint = new Point(0, 0);
     public void TopBar_MouseDown(object sender, MouseEventArgs e)
     {
         if (e.Button == MouseButtons.Left)
         {
-            MessageBox.Show("Test1"); //Ändra så man kan dra själva fönstret
+            dragging = true;
+            startPoint = new Point(e.X, e.Y);
+            this.Capture = true;
         }
     }
+    public void mainForm_MouseUp(object sender, MouseEventArgs e)
+    {
+        dragging = false;
+        this.Capture = false;
+    }
+    private void mainForm_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (dragging)
+        {
+            Point p = PointToScreen(e.Location);
+            Location = new Point(p.X - this.startPoint.X, p.Y - this.startPoint.Y);
+        }
+    }
+    //
 
     public void closeButtonPressed(object sender, EventArgs e)
     {
