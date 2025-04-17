@@ -72,53 +72,47 @@ public class DatabaseConnection
         }
     }
 
-    public static void DisplayMonths(ComboItem date, bool dropdown2)    //TODO: VIKTIGT VIKTIGT DENNA FIXAR KNAPPAR BARA HITTA KNAPP+MÅNAD SOM "bBJan" OCH ÄNDRA BACKGRUND BORDE FUNKA!!!!!!
+    public static void DisplayMonths(ComboItem date, bool dropdown2)    //denna
     {
         string connectionString = "Data Source=Budget.db;Version=3;";
 
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = $@"SELECT Name, Car, House FROM Month WHERE year_Id = {date.Text};";
+            string sql = "SELECT Name, Car, House FROM Month WHERE year_Id = @YearId;";
 
             using (SQLiteCommand command = new SQLiteCommand(sql, conn))
             {
-                command.Parameters.AddWithValue("@YearId", date);
+                command.Parameters.AddWithValue("@YearId", date.Text);
                 using (SQLiteDataReader reader = command.ExecuteReader())
                 {
-                    Months.Clear();
-                    Comparelist1.Clear();
-                    Comparelist2.Clear();
+                    var targetList = dropdown2 ? Comparelist2 : Comparelist1;
+                    targetList.Clear();
+
                     while (reader.Read())
                     {
-                        Months.Add(reader["Name"].ToString());  //Ändra runt här, Listan blir bara större och större så reseta den varje gång
-
                         var month = new Month(
                             reader["Name"].ToString(),
                             Convert.ToInt32(reader["Car"]),
                             Convert.ToInt32(reader["House"])
                         );
+
                         if (!dropdown2)
                             Comparelist1.Add(month);
 
                         else
                             Comparelist2.Add(month);
                     }
-                    Comparelist1 = Comparelist1
-                            .OrderBy(m => Form1UI.monthOrder.IndexOf(m.Name))
-                            .ToList();
 
-                    Comparelist2 = Comparelist1
-                            .OrderBy(m => Form1UI.monthOrder.IndexOf(m.Name))
-                            .ToList();
-                }
-                foreach (var mon in Comparelist1)
-                {
-                    Debug.WriteLine("Comparelist1:" + " " + mon);
-                }
-                foreach (var mon in Comparelist2)
-                {
-                    Debug.WriteLine("Comparelist2:" + " " + mon);
+                    if (!dropdown2)
+                        Comparelist1 = Comparelist1
+                        .OrderBy(m => Form1UI.monthOrder.IndexOf(m.Name))
+                        .ToList();
+
+                    else
+                        Comparelist2 = Comparelist2
+                        .OrderBy(m => Form1UI.monthOrder.IndexOf(m.Name))
+                        .ToList();
                 }
             }
         }

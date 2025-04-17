@@ -102,27 +102,26 @@ public partial class Form1 : Form
 
         int selectedIndex = cmb.SelectedIndex;
         ComboItem selectedValue = (ComboItem)cmb.SelectedValue;
+
+        if (!dropdown2)
+            currentYear = selectedValue.Text;
+        else
+            currentYear2 = selectedValue.Text;
+
         DatabaseConnection.DisplayMonths(selectedValue, dropdown2);
 
-        if (dropdown2) { currentYear2 = selectedValue.Text; }
-        else
-        {
-            currentYear = selectedValue.Text;
-        }
         UpdateButtonColor(dropdown2);
     }
 
     private void UpdateButtonColor(bool dropdown2)          //TODO: jämnför olika årens totala kostnad och ändra färg utifrån det
     {
         var targetButtons = dropdown2 ? design.SmallButtons : design.BigButtons;
+        var firstMonth = dropdown2 ? DatabaseConnection.Comparelist2 : DatabaseConnection.Comparelist1;
+        var secondMonth = dropdown2 ? DatabaseConnection.Comparelist1 : DatabaseConnection.Comparelist2;
+
         var defaultColor = Color.White;
         var highlightColor = dropdown2 ? Color.Red : Color.Blue;
         var buttonPrefix = dropdown2 ? "sB" : "bB";
-
-        var red = Color.Red;
-        var blue = Color.Blue;
-
-
 
         foreach (var button in targetButtons)
         {
@@ -130,22 +129,18 @@ public partial class Form1 : Form
             button.Enabled = false;
         }
 
-        foreach (var month in DatabaseConnection.Months)
+        foreach (var month in firstMonth)
         {
-            var targetName = buttonPrefix + month;
+            var targetName = buttonPrefix + month.Name;
             var button = targetButtons.FirstOrDefault(b => b.Name == targetName);
-            if (button != null)
-            {
-                button.Enabled = true;
 
-                button.BackColor = highlightColor;
-            }
-            
-            /* if (DatabaseConnection.Comparelist1[0].Car > DatabaseConnection.Comparelist2[0].Car)
-            {
-                button.BackColor = red;
-            }
-            else button.BackColor = blue; */
+            button.Enabled = true;
+            var compareMonth = secondMonth.FirstOrDefault(m => m.Name == month.Name);
+
+                if (month.Car > compareMonth.Car)
+                    button.BackColor = highlightColor;
+                else
+                    button.BackColor = Color.Purple;
         }
     }
 
