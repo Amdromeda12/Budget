@@ -1,11 +1,14 @@
 using System;
 using System.Data.SQLite;
+using System.Diagnostics;
 using Microsoft.VisualBasic;
 
 namespace Database.DatabaseConnection;
 public class DatabaseConnection
 {
     public static List<string> Months { get; set; } = new List<string>();
+    public static List<Month> Comparelist1 { get; set; } = new List<Month>();           //Gör 2 listor som man kan sen jämnföra med varann för att få färger
+    public static List<Month> Comparelist2 { get; set; } = new List<Month>();
 
     //Kolla genom dessa och gör dom bättre
     public static void InitializeDatabase() //Funkar
@@ -69,16 +72,14 @@ public class DatabaseConnection
         }
     }
 
-    public static void DisplayMonths(ComboItem date)
+    public static void DisplayMonths(ComboItem date, bool dropdown2)    //TODO: VIKTIGT VIKTIGT DENNA FIXAR KNAPPAR BARA HITTA KNAPP+MÅNAD SOM "bBJan" OCH ÄNDRA BACKGRUND BORDE FUNKA!!!!!!
     {
         string connectionString = "Data Source=Budget.db;Version=3;";
-        //string monthsList = $"Months in {date.Text}:\n";                //TODO: VIKTIGT VIKTIGT DENNA FIXAR KNAPPAR BARA HITTA KNAPP+MÅNAD SOM "bBJan" OCH ÄNDRA BACKGRUND BORDE FUNKA!!!!!!
-
 
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = $@"SELECT Name FROM Month WHERE year_Id = {date.Text};";
+            string sql = $@"SELECT Name, Car, House FROM Month WHERE year_Id = {date.Text};";
 
             using (SQLiteCommand command = new SQLiteCommand(sql, conn))
             {
@@ -86,18 +87,40 @@ public class DatabaseConnection
                 using (SQLiteDataReader reader = command.ExecuteReader())
                 {
                     Months.Clear();
+                    Comparelist1.Clear();
+                    Comparelist2.Clear();
                     while (reader.Read())
                     {
-                        //monthsList += reader["Name"].ToString() + "\n";
-                        Months.Add(reader["Name"].ToString());
+                        Months.Add(reader["Name"].ToString());  //Ändra runt här, Listan blir bara större och större så reseta den varje gång
+
+                        var month = new Month(
+                            reader["Name"].ToString(),
+                            Convert.ToInt32(reader["Car"]),
+                            Convert.ToInt32(reader["House"])
+                        );
+                        if (!dropdown2)
+                            Comparelist1.Add(month);
+
+                        else
+                            Comparelist2.Add(month);
                     }
+                    Comparelist1 = Comparelist1
+                            .OrderBy(m => Form1UI.monthOrder.IndexOf(m.Name))
+                            .ToList();
+
+                    Comparelist2 = Comparelist1
+                            .OrderBy(m => Form1UI.monthOrder.IndexOf(m.Name))
+                            .ToList();
+                }
+                foreach (var mon in Comparelist1)
+                {
+                    Debug.WriteLine("Comparelist1:" + " " + mon);
+                }
+                foreach (var mon in Comparelist2)
+                {
+                    Debug.WriteLine("Comparelist2:" + " " + mon);
                 }
             }
-
-            // foreach (var mon in Months)
-            // {
-            //     MessageBox.Show(mon);
-            // }
         }
     }
 

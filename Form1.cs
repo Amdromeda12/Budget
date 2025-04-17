@@ -48,16 +48,16 @@ public partial class Form1 : Form
     private void MonthButton(object sender, EventArgs e)
     {
         //En "DeSelect" if sats om den redan är "Selected"
-        //En till PieChart om det är 2 "Selected"
         Button clickedButton = sender as Button;
         bool isSpecial = clickedButton.Name.Contains("sB");
 
-        design.series.Enabled = true;
+        if (!isSpecial) design.series.Enabled = true;
+        if (isSpecial) design.series2.Enabled = true;
 
         string year = isSpecial ? currentYear2 : currentYear;
-        Month response = DatabaseConnection.GetMonthData(year, clickedButton.Text);
+        Month response = DatabaseConnection.GetMonthData(year, clickedButton.Text);         //Här
 
-        UpdateChart(response);
+        UpdateChart(response, isSpecial);
         HandleButtonHighlight(clickedButton, isSpecial);
     }
 
@@ -75,26 +75,24 @@ public partial class Form1 : Form
         previous = clickedButton;
     }
 
-    private void UpdateChart(Month response)
+    private void UpdateChart(Month response, bool isSpecial)
     {
-        //Går inte när disabled
-        design.chart1.Series[0].Points[0].Label = $"{response.Name} House: {response.House}";
-        design.chart1.Series[0].Points[1].Label = $"{response.Name} Car: {response.Car}";
+        var chart = isSpecial ? design.chart2 : design.chart1;
 
-        UpdatePieChart("Category A", response.House);
-        UpdatePieChart("Category B", response.Car);
-    }
-    //Tänka på denna "Under"
-    private void UpdatePieChart(string categoryName, double changeValue)
-    {
-        foreach (var point in design.chart1.Series[0].Points)
+        chart.Series[0].Points[0].Label = $"{response.Name} House: {response.House}";
+        chart.Series[0].Points[1].Label = $"{response.Name} Car: {response.Car}";
+
+        foreach (var point in chart.Series[0].Points)
         {
-            if (point.AxisLabel == categoryName)
+            if (point.AxisLabel == "Category A")
             {
-                point.SetValueY(changeValue);       //Byter till exakt
+                point.SetValueY(response.House);       //Byter till exakt
+            }
+            if (point.AxisLabel == "Category B")
+            {
+                point.SetValueY(response.Car);
             }
         }
-        design.chart1.Invalidate();
     }
 
     private void DropDownChanged(object sender, EventArgs e)
@@ -104,7 +102,7 @@ public partial class Form1 : Form
 
         int selectedIndex = cmb.SelectedIndex;
         ComboItem selectedValue = (ComboItem)cmb.SelectedValue;
-        DatabaseConnection.DisplayMonths(selectedValue);
+        DatabaseConnection.DisplayMonths(selectedValue, dropdown2);
 
         if (dropdown2) { currentYear2 = selectedValue.Text; }
         else
@@ -112,7 +110,6 @@ public partial class Form1 : Form
             currentYear = selectedValue.Text;
         }
         UpdateButtonColor(dropdown2);
-
     }
 
     private void UpdateButtonColor(bool dropdown2)          //TODO: jämnför olika årens totala kostnad och ändra färg utifrån det
@@ -121,6 +118,11 @@ public partial class Form1 : Form
         var defaultColor = Color.White;
         var highlightColor = dropdown2 ? Color.Red : Color.Blue;
         var buttonPrefix = dropdown2 ? "sB" : "bB";
+
+        var red = Color.Red;
+        var blue = Color.Blue;
+
+
 
         foreach (var button in targetButtons)
         {
@@ -138,6 +140,12 @@ public partial class Form1 : Form
 
                 button.BackColor = highlightColor;
             }
+            
+            /* if (DatabaseConnection.Comparelist1[0].Car > DatabaseConnection.Comparelist2[0].Car)
+            {
+                button.BackColor = red;
+            }
+            else button.BackColor = blue; */
         }
     }
 

@@ -9,6 +9,10 @@ public class Form1UI
     //  
     //  
     public Chart chart1;
+    public Series series { get; private set; }
+
+    public Chart chart2;
+    public Series series2 { get; private set; }
 
     private Form mainForm;
     public Panel bottomMain { get; private set; }
@@ -24,12 +28,11 @@ public class Form1UI
     public Button closeButton { get; private set; }
     public Button minimizeButton { get; private set; }
 
-    private string[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };   //Ändra stora bokstäver
+    public static readonly List<string> monthOrder = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
     private FlowLayoutPanel container;
     public FlowLayoutPanel Container => container; // Expose container to Form1
     public Button[] BigButtons { get; private set; } // Store references
     public Button[] SmallButtons { get; private set; }
-    public Series series { get; private set; }
 
     public Form1UI(Form form)
     {
@@ -146,12 +149,12 @@ public class Form1UI
 
             Button bigButton = new Button()
             {
-                Name = "bB" + months[i],
+                Name = "bB" + monthOrder[i],
                 BackColor = Color.Gray,
                 Dock = DockStyle.Top,
                 Height = 200,
                 FlatStyle = FlatStyle.Flat,
-                Text = months[i],
+                Text = monthOrder[i],
                 Font = new Font("Arial", 22, FontStyle.Bold),
                 TextAlign = ContentAlignment.TopCenter
             };
@@ -160,12 +163,12 @@ public class Form1UI
 
             Button smallButton = new Button()
             {
-                Name = "sB" + months[i],
+                Name = "sB" + monthOrder[i],
                 BackColor = Color.Gray,
                 Dock = DockStyle.Bottom,
                 Height = 50,
                 FlatStyle = FlatStyle.Flat,
-                Text = months[i],
+                Text = monthOrder[i],
                 Font = new Font("Arial", 22, FontStyle.Bold)
             };
             smallButton.FlatAppearance.BorderSize = 0;
@@ -188,7 +191,7 @@ public class Form1UI
 
         chart1 = new Chart()
         {
-            Dock = DockStyle.Fill // Make the chart fill the form
+            Dock = DockStyle.Left
         };
 
         var chartArea = new ChartArea();
@@ -209,6 +212,32 @@ public class Form1UI
 
         chart1.Series.Add(series);
         bottomMain.Controls.Add(chart1);
+
+        //2
+
+        chart2 = new Chart()
+        {
+            Dock = DockStyle.Right
+        };
+
+        var chartArea2 = new ChartArea();
+        chart2.ChartAreas.Add(chartArea2);
+
+        series2 = new Series
+        {
+            ChartType = SeriesChartType.Pie,
+            BorderWidth = 2,
+            BorderColor = System.Drawing.Color.Black,
+            Enabled = false
+        };
+
+        series2.Points.AddXY("Category A", 40);
+        series2.Points.AddXY("Category B", 30);
+        //series.Points.AddXY("Category C", 30);    Ändra denna till en överskott or underskott
+        //                                          Tex. Grön om det finns överskott eller röd om det är under
+
+        chart2.Series.Add(series2);
+        bottomMain.Controls.Add(chart2);
 
         //-------------------------------------------------------------------------
 
