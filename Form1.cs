@@ -71,7 +71,7 @@ public partial class Form1 : Form
         }
 
         clickedButton.FlatAppearance.BorderSize = 5;
-        clickedButton.FlatAppearance.BorderColor = isSpecial ? Color.Black : Color.Yellow;
+        clickedButton.FlatAppearance.BorderColor = Color.Black;
         previous = clickedButton;
     }
 
@@ -113,34 +113,70 @@ public partial class Form1 : Form
         UpdateButtonColor(dropdown2);
     }
 
-    private void UpdateButtonColor(bool dropdown2)          //TODO: jämnför olika årens totala kostnad och ändra färg utifrån det
+    
+    private void UpdateButtonColor(bool dropdown2)
     {
-        var targetButtons = dropdown2 ? design.SmallButtons : design.BigButtons;
         var firstMonth = dropdown2 ? DatabaseConnection.Comparelist2 : DatabaseConnection.Comparelist1;
-        var secondMonth = dropdown2 ? DatabaseConnection.Comparelist1 : DatabaseConnection.Comparelist2;
 
-        var defaultColor = Color.White;
-        var highlightColor = dropdown2 ? Color.Red : Color.Blue;
         var buttonPrefix = dropdown2 ? "sB" : "bB";
+        var buttonsize = dropdown2 ? design.SmallButtons : design.BigButtons;
 
-        foreach (var button in targetButtons)
+        foreach (var button in buttonsize)
         {
-            button.BackColor = defaultColor;
             button.Enabled = false;
+            button.BackColor = Color.White;
+            button.Tag = null;
         }
-
         foreach (var month in firstMonth)
         {
             var targetName = buttonPrefix + month.Name;
-            var button = targetButtons.FirstOrDefault(b => b.Name == targetName);
+            var button = buttonsize.FirstOrDefault(b => b.Name == targetName);
+
+            button.Tag = month.Car;             //TODO: Ändra detta till "Total" och gör om i klassen för det
 
             button.Enabled = true;
-            var compareMonth = secondMonth.FirstOrDefault(m => m.Name == month.Name);
+        }
+        for (int i = 0; i < design.BigButtons.Count(); i++)
+        {
+            object bigTagObj = design.BigButtons[i].Tag;
+            object smallTagObj = design.SmallButtons[i].Tag;
 
-                if (month.Car > compareMonth.Car)
-                    button.BackColor = highlightColor;
+            bool bigTagValid = int.TryParse(bigTagObj?.ToString(), out int bigTag);
+            bool smallTagValid = int.TryParse(smallTagObj?.ToString(), out int smallTag);
+
+            if (bigTagValid && smallTagValid)
+            {
+                if (bigTag > smallTag)
+                {
+                    design.BigButtons[i].BackColor = Color.Green;
+                    design.SmallButtons[i].BackColor = Color.Red;
+                }
+                else if (bigTag < smallTag)
+                {
+                    design.BigButtons[i].BackColor = Color.Red;
+                    design.SmallButtons[i].BackColor = Color.Green;
+                }
                 else
-                    button.BackColor = Color.Purple;
+                {
+                    design.BigButtons[i].BackColor = Color.MediumPurple;
+                    design.SmallButtons[i].BackColor = Color.MediumPurple;
+                }
+            }
+            else if (bigTagValid && !smallTagValid)
+            {
+                design.BigButtons[i].BackColor = Color.Blue;
+                design.SmallButtons[i].BackColor = Color.Gray;
+            }
+            else if (!bigTagValid && smallTagValid)
+            {
+                design.BigButtons[i].BackColor = Color.Gray;
+                design.SmallButtons[i].BackColor = Color.RosyBrown;
+            }
+            else
+            {
+                design.BigButtons[i].BackColor = Color.Gray;
+                design.SmallButtons[i].BackColor = Color.Gray;
+            }
         }
     }
 
@@ -183,20 +219,32 @@ public partial class Form1 : Form
 
     private static void TestCodeMonth()
     {
+        DatabaseConnection.InsertMonth("Jan", 2023, 2000, 3220);
+        DatabaseConnection.InsertMonth("Feb", 2023, 2600, 2000);
+        DatabaseConnection.InsertMonth("Mar", 2023, 2000, 3220);
+        DatabaseConnection.InsertMonth("Apr", 2023, 34440, 1120);
+        DatabaseConnection.InsertMonth("May", 2023, 865, 1120);
+        DatabaseConnection.InsertMonth("Jun", 2023, 554, 1120);
+        DatabaseConnection.InsertMonth("Jul", 2023, 2231, 1120);
+        DatabaseConnection.InsertMonth("Aug", 2023, 1800, 2900);
+        DatabaseConnection.InsertMonth("Sep", 2023, 2200, 3100);
+        DatabaseConnection.InsertMonth("Oct", 2023, 2500, 3300);
+        DatabaseConnection.InsertMonth("Nov", 2023, 25500, 3300);
+
         DatabaseConnection.InsertMonth("Jan", 2024, 2000, 3220);
-        DatabaseConnection.InsertMonth("Jan", 2025, 2000, 3220);
-        DatabaseConnection.InsertMonth("Jan", 2026, 2000, 3220);
-        DatabaseConnection.InsertMonth("Feb", 2024, 34440, 1120);
-        DatabaseConnection.InsertMonth("Feb", 2025, 34440, 1120);
-        DatabaseConnection.InsertMonth("Feb", 2026, 34440, 1120);
-        DatabaseConnection.InsertMonth("Feb", 2025, 34440, 1120);
-        DatabaseConnection.InsertMonth("Mar", 2025, 1800, 2900);
-        DatabaseConnection.InsertMonth("Apr", 2025, 2200, 3100);
-        DatabaseConnection.InsertMonth("May", 2025, 2500, 3300);
+        DatabaseConnection.InsertMonth("Feb", 2024, 2500, 3220);
+        DatabaseConnection.InsertMonth("Mar", 2024, 100, 3220);
+        DatabaseConnection.InsertMonth("Apr", 2024, 333, 1120);
+        DatabaseConnection.InsertMonth("May", 2024, 324440, 1120);
+        DatabaseConnection.InsertMonth("Jun", 2024, 21, 1120);
+        DatabaseConnection.InsertMonth("Jul", 2024, 34440, 1120);
+        DatabaseConnection.InsertMonth("Aug", 2024, 3345, 2900);
+        DatabaseConnection.InsertMonth("Sep", 2024, 23200, 3100);
+        DatabaseConnection.InsertMonth("Oct", 2024, 5, 3300);
+        
+
 
         DatabaseConnection.InsetYear(2023);
         DatabaseConnection.InsetYear(2024);
-        DatabaseConnection.InsetYear(2025);
-        DatabaseConnection.InsetYear(2026);
     }
 }
