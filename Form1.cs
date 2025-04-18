@@ -19,6 +19,10 @@ public partial class Form1 : Form
         design.topBar.MouseDown += TopBar_MouseDown;
         design.closeButton.Click += closeButtonPressed;
         design.minimizeButton.Click += minimizeButtonPressed;
+        design.flipper.Click += flipperPressed;
+        design.add.Click += addButtonPressed;
+        design.edit.Click += editButtonPressed;
+        design.remove.Click += removeButtonPressed;
         design.dropdown1.SelectedIndexChanged += DropDownChanged;
         design.dropdown2.SelectedIndexChanged += DropDownChanged;
         this.MouseDown += TopBar_MouseDown;
@@ -38,6 +42,28 @@ public partial class Form1 : Form
 
         try { TestCodeMonth(); }
         catch (Exception) { return; }
+    }
+
+    private void removeButtonPressed(object? sender, EventArgs e)
+    {
+        MessageBox.Show("remove");
+    }
+
+    private void editButtonPressed(object? sender, EventArgs e)
+    {
+        MessageBox.Show("edit");
+
+    }
+
+    private void addButtonPressed(object? sender, EventArgs e)
+    {
+        MessageBox.Show("add");
+
+    }
+
+    private void flipperPressed(object? sender, EventArgs e)
+    {
+        design.page2.Visible = !design.page2.Visible;
     }
 
     private Button? previousButton = null;
@@ -113,7 +139,7 @@ public partial class Form1 : Form
         UpdateButtonColor(dropdown2);
     }
 
-    
+
     private void UpdateButtonColor(bool dropdown2)
     {
         var firstMonth = dropdown2 ? DatabaseConnection.Comparelist2 : DatabaseConnection.Comparelist1;
@@ -241,7 +267,7 @@ public partial class Form1 : Form
         DatabaseConnection.InsertMonth("Aug", 2024, 3345, 2900);
         DatabaseConnection.InsertMonth("Sep", 2024, 23200, 3100);
         DatabaseConnection.InsertMonth("Oct", 2024, 5, 3300);
-        
+
 
 
         DatabaseConnection.InsetYear(2023);

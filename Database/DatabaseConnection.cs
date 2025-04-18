@@ -39,6 +39,7 @@ public class DatabaseConnection
             }
         }
     }
+    
 
     public static void InsertMonth(string name, int year_Id, int car, int house)
     {
