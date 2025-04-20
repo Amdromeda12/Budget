@@ -1,4 +1,4 @@
-public class Category
+public class Item
 {
     public int id { get; set; }
     public string category { get; set; }

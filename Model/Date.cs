@@ -1,24 +1,27 @@
 public class Month
 {
-    public string? Name { get; set; }
-    public int Year_Id { get; set; }
-    public int Car { get; set; }
-    public int House { get; set; }
+    public int Id {get;}
+    public string Name { get; }
+    public int YearId { get; }
+    public double Income { get; }
+    public double Outcome { get; }
 
 
-    public Month(string name, int car, int house)
+    public Month(string name, int yearId, double income, double outcome)
     {
         Name = name;
-        Car = car;
-        House = house;
+        YearId = yearId;
+        Income = income;
+        Outcome = outcome;
     }
+
     public override string ToString()
     {
-        return $"Name: {Name}, House: {House}, Car: {Car}";
+        return $"Name: {Name}, Income: {Income}, Outcome: {Outcome}";
     }
 }
 public class Year
 {
-    public string Id;
-    public int Year_Number;
+    public int Id;
+    public string Year_Number;
 }

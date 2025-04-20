@@ -210,6 +210,8 @@ public class Form1UI
             Height = 580
         };
 
+
+        //Paj 1 och 2
         chart1 = new Chart()
         {
             Dock = DockStyle.Left
@@ -223,18 +225,21 @@ public class Form1UI
             ChartType = SeriesChartType.Pie,
             BorderWidth = 2,
             BorderColor = System.Drawing.Color.Black,
-            Enabled = false
         };
 
-        series.Points.AddXY("Category A", 40);
-        series.Points.AddXY("Category B", 30);
-        //series.Points.AddXY("Category C", 30);    Ändra denna till en överskott or underskott
+        chart1.Titles.Clear(); // Optional: clear existing titles
+        chart1.Titles.Add("Monthly Expenses Breakdown");
+        chart1.Titles[0].Font = new Font("Arial", 14, FontStyle.Bold);
+        chart1.Titles[0].ForeColor = Color.DarkBlue;
+        chart1.Titles[0].Alignment = ContentAlignment.TopCenter;
+
+        series.Points.AddXY("Category A", 0);
+        series.Points.AddXY("Category B", 0);
+        series.Points.AddXY("Category C", 0);        //Ändra denna till en överskott or underskott
         //                                          Tex. Grön om det finns överskott eller röd om det är under
 
         chart1.Series.Add(series);
         bottomMain.Controls.Add(chart1);
-
-        //2
 
         chart2 = new Chart()
         {
@@ -249,13 +254,11 @@ public class Form1UI
             ChartType = SeriesChartType.Pie,
             BorderWidth = 2,
             BorderColor = System.Drawing.Color.Black,
-            Enabled = false
         };
 
-        series2.Points.AddXY("Category A", 40);
-        series2.Points.AddXY("Category B", 30);
-        //series.Points.AddXY("Category C", 30);    Ändra denna till en överskott or underskott
-        //                                          Tex. Grön om det finns överskott eller röd om det är under
+        series2.Points.AddXY("Category A", 0);
+        series2.Points.AddXY("Category B", 0);
+        series2.Points.AddXY("Category C", 0);
 
         chart2.Series.Add(series2);
         bottomMain.Controls.Add(chart2);
@@ -349,6 +352,8 @@ public class Form1UI
         page2.Controls.Add(dgv);
 
         DataTable table2 = new DataTable();
+
+/* 
         table2.Columns.Add("ID", typeof(int));
         table2.Columns.Add("Name", typeof(string));
         table2.Columns.Add("Email", typeof(string));
@@ -356,10 +361,9 @@ public class Form1UI
         table2.Rows.Add(1, "Alice", "alice@example.com");
         table2.Rows.Add(2, "Bob", "bob@example.com");
         table2.Rows.Add(3, "Charlie", "charlie@example.com");
-
         dgv.DataSource = table2;
-
         page2.Controls.Add(dgv);
+         */
         //
 
 
@@ -390,8 +394,6 @@ public class Form1UI
         mainForm.Controls.Add(sidebar);
         mainForm.Controls.Add(topBar);
     }
-
-
     public void populateYears()
     {
         List<string> result = DatabaseConnection.GetYearData();

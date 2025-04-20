@@ -7,15 +7,13 @@ using System.Windows.Forms.DataVisualization.Charting;
 namespace Budget;
 public partial class Form1 : Form
 {
-    //      Dropdownen ska hämta året.
-    //      Checkar vilket datum det är och skapar / lägger in det i en ny månad
     private Form1UI design;
     public Form1()
     {
         DatabaseConnection.InitializeDatabase();
+        UpdateYearAndMonth();
 
         design = new Form1UI(this);
-
         design.topBar.MouseDown += TopBar_MouseDown;
         design.closeButton.Click += closeButtonPressed;
         design.minimizeButton.Click += minimizeButtonPressed;
@@ -39,9 +37,6 @@ public partial class Form1 : Form
         }
 
         design.populateYears();
-
-        try { TestCodeMonth(); }
-        catch (Exception) { return; }
     }
 
     private void removeButtonPressed(object? sender, EventArgs e)
@@ -52,13 +47,11 @@ public partial class Form1 : Form
     private void editButtonPressed(object? sender, EventArgs e)
     {
         MessageBox.Show("edit");
-
     }
 
     private void addButtonPressed(object? sender, EventArgs e)
     {
         MessageBox.Show("add");
-
     }
 
     private void flipperPressed(object? sender, EventArgs e)
@@ -77,12 +70,8 @@ public partial class Form1 : Form
         Button clickedButton = sender as Button;
         bool isSpecial = clickedButton.Name.Contains("sB");
 
-        if (!isSpecial) design.series.Enabled = true;
-        if (isSpecial) design.series2.Enabled = true;
-
         string year = isSpecial ? currentYear2 : currentYear;
-        Month response = DatabaseConnection.GetMonthData(year, clickedButton.Text);         //Här
-
+        Month response = DatabaseConnection.GetMonthData(year, clickedButton.Text);
         UpdateChart(response, isSpecial);
         HandleButtonHighlight(clickedButton, isSpecial);
     }
@@ -90,12 +79,10 @@ public partial class Form1 : Form
     private void HandleButtonHighlight(Button clickedButton, bool isSpecial)
     {
         ref Button previous = ref isSpecial ? ref previousButton2 : ref previousButton;
-
         if (previous != null)
         {
             previous.FlatAppearance.BorderSize = 0;
         }
-
         clickedButton.FlatAppearance.BorderSize = 5;
         clickedButton.FlatAppearance.BorderColor = Color.Black;
         previous = clickedButton;
@@ -105,18 +92,45 @@ public partial class Form1 : Form
     {
         var chart = isSpecial ? design.chart2 : design.chart1;
 
-        chart.Series[0].Points[0].Label = $"{response.Name} House: {response.House}";
-        chart.Series[0].Points[1].Label = $"{response.Name} Car: {response.Car}";
+        double income = response.Income == 0 ? 0.01 : response.Income;
+        double outcome = response.Outcome == 0 ? 0.01 : response.Outcome;
+        double difference = response.Income - response.Outcome;
+        chart.Titles.Clear();
+
+        chart.Titles.Add(response.Name + " " + response.YearId);
+        chart.Titles[0].Font = new Font("Arial", 14, FontStyle.Bold);
+        chart.Titles[0].ForeColor = Color.DarkBlue;
+        chart.Titles[0].Alignment = ContentAlignment.TopCenter;
 
         foreach (var point in chart.Series[0].Points)
         {
             if (point.AxisLabel == "Category A")
             {
-                point.SetValueY(response.House);       //Byter till exakt
+                point.SetValueY(income);
+                point.Color = Color.AliceBlue;
+
+                point.Label = $"Income: {response.Income}";
             }
-            if (point.AxisLabel == "Category B")
+            else if (point.AxisLabel == "Category B")
             {
-                point.SetValueY(response.Car);
+                point.SetValueY(outcome);
+                point.Color = Color.Yellow;
+
+                point.Label = $"Outcome: {response.Outcome}";
+            }
+            else if (point.AxisLabel == "Category C")
+            {
+                if (difference > 0)
+                {
+                    point.Color = Color.Green;
+                    point.Label = $"Gained: {difference}";
+                }
+                else
+                {
+                    point.Color = Color.Red;
+                    point.Label = $"Lost: {difference}";
+                }
+                point.SetValueY(difference);
             }
         }
     }
@@ -135,7 +149,6 @@ public partial class Form1 : Form
             currentYear2 = selectedValue.Text;
 
         DatabaseConnection.DisplayMonths(selectedValue, dropdown2);
-
         UpdateButtonColor(dropdown2);
     }
 
@@ -143,7 +156,6 @@ public partial class Form1 : Form
     private void UpdateButtonColor(bool dropdown2)
     {
         var firstMonth = dropdown2 ? DatabaseConnection.Comparelist2 : DatabaseConnection.Comparelist1;
-
         var buttonPrefix = dropdown2 ? "sB" : "bB";
         var buttonsize = dropdown2 ? design.SmallButtons : design.BigButtons;
 
@@ -158,8 +170,7 @@ public partial class Form1 : Form
             var targetName = buttonPrefix + month.Name;
             var button = buttonsize.FirstOrDefault(b => b.Name == targetName);
 
-            button.Tag = month.Car;             //TODO: Ändra detta till "Total" och gör om i klassen för det
-
+            button.Tag = month.Income;
             button.Enabled = true;
         }
         for (int i = 0; i < design.BigButtons.Count(); i++)
@@ -205,7 +216,6 @@ public partial class Form1 : Form
             }
         }
     }
-
     //  Window Drag
     private bool dragging = false;
     private Point startPoint = new Point(0, 0);
@@ -243,34 +253,28 @@ public partial class Form1 : Form
         this.WindowState = FormWindowState.Minimized;
     }
 
-    private static void TestCodeMonth()
+    private static void UpdateYearAndMonth()
     {
-        DatabaseConnection.InsertMonth("Jan", 2023, 2000, 3220);
-        DatabaseConnection.InsertMonth("Feb", 2023, 2600, 2000);
-        DatabaseConnection.InsertMonth("Mar", 2023, 2000, 3220);
-        DatabaseConnection.InsertMonth("Apr", 2023, 34440, 1120);
-        DatabaseConnection.InsertMonth("May", 2023, 865, 1120);
-        DatabaseConnection.InsertMonth("Jun", 2023, 554, 1120);
-        DatabaseConnection.InsertMonth("Jul", 2023, 2231, 1120);
-        DatabaseConnection.InsertMonth("Aug", 2023, 1800, 2900);
-        DatabaseConnection.InsertMonth("Sep", 2023, 2200, 3100);
-        DatabaseConnection.InsertMonth("Oct", 2023, 2500, 3300);
-        DatabaseConnection.InsertMonth("Nov", 2023, 25500, 3300);
+        int currentYearInt = DateTime.Now.Year;
+        int currentMonthInt = DateTime.Now.Month+1;
 
-        DatabaseConnection.InsertMonth("Jan", 2024, 2000, 3220);
-        DatabaseConnection.InsertMonth("Feb", 2024, 2500, 3220);
-        DatabaseConnection.InsertMonth("Mar", 2024, 100, 3220);
-        DatabaseConnection.InsertMonth("Apr", 2024, 333, 1120);
-        DatabaseConnection.InsertMonth("May", 2024, 324440, 1120);
-        DatabaseConnection.InsertMonth("Jun", 2024, 21, 1120);
-        DatabaseConnection.InsertMonth("Jul", 2024, 34440, 1120);
-        DatabaseConnection.InsertMonth("Aug", 2024, 3345, 2900);
-        DatabaseConnection.InsertMonth("Sep", 2024, 23200, 3100);
-        DatabaseConnection.InsertMonth("Oct", 2024, 5, 3300);
+        string currentYear = currentYearInt.ToString();
+        DatabaseConnection.InsertYear(currentYearInt);
+        string[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        for (int i = 0; i < currentMonthInt; i++)
+        {
+            DatabaseConnection.InsertMonth(months[i], currentYearInt);
+        }
+        var monthIdsCurrentYear = months
+            .Take(currentMonthInt)
+            .Select(month => DatabaseConnection.GetMonthId(month, currentYear))
+            .ToList();
 
-
-
-        DatabaseConnection.InsetYear(2023);
-        DatabaseConnection.InsetYear(2024);
+        /* foreach (var monthId in monthIdsCurrentYear)
+        {
+            DatabaseConnection.InsertItem("Rent", "Apartment rent", 1000, "Expense", monthId);
+            DatabaseConnection.InsertItem("Groceries", "Weekly groceries", 200, "Expense", monthId);
+            DatabaseConnection.InsertItem("Salary", "Monthly salary", 3000, "Income", monthId);
+        } */
     }
 }
