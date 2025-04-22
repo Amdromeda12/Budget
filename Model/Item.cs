@@ -1,7 +1,19 @@
 public class Item
 {
-    public int id { get; set; }
-    public string category { get; set; }
-    public string type { get; set; }
-    public string status { get; set; }
+    public string Name { get; set; }
+    public string Type { get; set; }
+    public double Amount { get; set; }
+    public string? Description { get; set; }
+    public string Month_Name { get; set; }
+    public int Month_Id { get; set; }
+
+    public Item(string name, string type, double amount, string description,string month_Name, int monthId)
+    {
+        Name = name;
+        Type = type;
+        Amount = amount;
+        Description = description;
+        Month_Name = month_Name;
+        Month_Id = monthId;
+    }
 }

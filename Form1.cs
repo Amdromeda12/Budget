@@ -8,13 +8,19 @@ namespace Budget;
 public partial class Form1 : Form
 {
     private Form1UI design;
+    private Button? previousButton = null;
+    private Button? previousButton2 = null;
+    private string currentYear;
+    private string currentYear2;
+    private bool dragging = false;
+    private Point startPoint = new Point(0, 0);
     public Form1()
     {
         DatabaseConnection.InitializeDatabase();
         UpdateYearAndMonth();
 
         design = new Form1UI(this);
-        design.topBar.MouseDown += TopBar_MouseDown;
+        design.topBar.MouseDown += TopBarWindowDrag;
         design.closeButton.Click += closeButtonPressed;
         design.minimizeButton.Click += minimizeButtonPressed;
         design.flipper.Click += flipperPressed;
@@ -23,9 +29,10 @@ public partial class Form1 : Form
         design.remove.Click += removeButtonPressed;
         design.dropdown1.SelectedIndexChanged += DropDownChanged;
         design.dropdown2.SelectedIndexChanged += DropDownChanged;
-        this.MouseDown += TopBar_MouseDown;
-        this.MouseMove += mainForm_MouseMove;
-        this.MouseUp += mainForm_MouseUp;
+        design.CRUD.SelectedIndexChanged += CRUDChanged;
+        this.MouseDown += TopBarWindowDrag;
+        this.MouseMove += TopBarWindowDragMove;
+        this.MouseUp += TopBarWindowDragFunction;
 
         foreach (Button btn in design.BigButtons)
         {
@@ -37,32 +44,69 @@ public partial class Form1 : Form
         }
 
         design.populateYears();
+
+        using (var modal = new AddModal())
+        {
+            var result = modal.ShowDialog(this);
+            if (result == DialogResult.OK)
+            {
+                string name = modal.Name;
+                string type = modal.Type;
+                double amount = modal.Amount;
+                string description = modal.Description;
+                string month = modal.Month?.Substring(0, 3);
+                int year = modal.Year;
+
+                DatabaseConnection.InsertItem(name, type, amount, description, month, year);
+
+            }
+        }
     }
+
+    public string SelectedType;
 
     private void removeButtonPressed(object? sender, EventArgs e)
     {
         MessageBox.Show("remove");
     }
-
     private void editButtonPressed(object? sender, EventArgs e)
     {
         MessageBox.Show("edit");
     }
-
     private void addButtonPressed(object? sender, EventArgs e)
     {
-        MessageBox.Show("add");
-    }
+        string target = sender.text;
+        switch(target)
+            case "Year":
 
+                break;
+            case "Month":
+                break;
+            case "Item":
+                using (var modal = new AddModal())
+                {
+                    var result = modal.ShowDialog(this);
+                    if (result == DialogResult.OK)
+                    {
+                        string name = modal.Name;
+                        string type = modal.Type;
+                        double amount = modal.Amount;
+                        string description = modal.Description;
+                        string month = modal.Month?.Substring(0, 3);
+                        int year = modal.Year;
+
+                        DatabaseConnection.InsertItem(name, type, amount, description, month, year);
+                        updateCRUD(3);
+                    }
+                }
+                break;
+                //DatabaseConnection.InsertItem("Rent", "Expense", 1000, "Monthly Rent for the house", monthName, monthId);
+        }
+    }
     private void flipperPressed(object? sender, EventArgs e)
     {
         design.page2.Visible = !design.page2.Visible;
     }
-
-    private Button? previousButton = null;
-    private Button? previousButton2 = null;
-    private string currentYear;
-    private string currentYear2;
 
     private void MonthButton(object sender, EventArgs e)
     {
@@ -152,6 +196,81 @@ public partial class Form1 : Form
         UpdateButtonColor(dropdown2);
     }
 
+    private void CRUDChanged(object sender, EventArgs e)
+    {
+        ComboBox cmb = (ComboBox)sender;
+
+        SelectedType = cmb.SelectedItem.ToString();
+
+        switch (SelectedType)
+        {
+            case "Year":
+                updateCRUD(1);
+                break;
+            case "Month":
+                updateCRUD(2);
+                break;
+            case "Item":
+                updateCRUD(3);
+                break;
+        }
+    }
+
+    private void updateCRUD(int target)
+    {
+        switch (target)
+        {
+            case 1:
+                List<string> yearData = DatabaseConnection.GetYearData();
+
+                design.table2.Rows.Clear();
+                design.table2.Columns.Clear();
+
+                design.table2.Columns.Add("Years");
+                // Add year values to the table
+                foreach (var year in yearData)
+                {
+                    design.table2.Rows.Add(year);
+                }
+
+                break;
+
+            case 2:
+                List<Month> monthData = DatabaseConnection.GetMonthData2();
+
+                design.table2.Rows.Clear();
+                design.table2.Columns.Clear();
+
+                design.table2.Columns.Add("Month");
+                design.table2.Columns.Add("Year");
+                design.table2.Columns.Add("Income");
+                design.table2.Columns.Add("Outcome");
+
+                foreach (var month in monthData)
+                {
+                    design.table2.Rows.Add(month.Name, month.YearId, month.Income, month.Outcome);
+                }
+                break;
+
+            case 3:
+                List<Item> itemData = DatabaseConnection.GetItemData();
+
+                design.table2.Rows.Clear();
+                design.table2.Columns.Clear();
+
+                design.table2.Columns.Add("Name");
+                design.table2.Columns.Add("Type");
+                design.table2.Columns.Add("Amount");
+                design.table2.Columns.Add("Description");
+                design.table2.Columns.Add("Month");
+
+                foreach (var item in itemData)
+                {
+                    design.table2.Rows.Add(item.Name, item.Type, item.Amount, item.Description, item.Month_Name);
+                }
+                break;
+        }
+    }
 
     private void UpdateButtonColor(bool dropdown2)
     {
@@ -216,10 +335,7 @@ public partial class Form1 : Form
             }
         }
     }
-    //  Window Drag
-    private bool dragging = false;
-    private Point startPoint = new Point(0, 0);
-    public void TopBar_MouseDown(object sender, MouseEventArgs e)
+    public void TopBarWindowDrag(object sender, MouseEventArgs e)
     {
         if (e.Button == MouseButtons.Left)
         {
@@ -228,12 +344,12 @@ public partial class Form1 : Form
             this.Capture = true;
         }
     }
-    public void mainForm_MouseUp(object sender, MouseEventArgs e)
+    public void TopBarWindowDragFunction(object sender, MouseEventArgs e)
     {
         dragging = false;
         this.Capture = false;
     }
-    private void mainForm_MouseMove(object sender, MouseEventArgs e)
+    private void TopBarWindowDragMove(object sender, MouseEventArgs e)
     {
         if (dragging)
         {
@@ -241,26 +357,24 @@ public partial class Form1 : Form
             Location = new Point(p.X - this.startPoint.X, p.Y - this.startPoint.Y);
         }
     }
-    //
-
     public void closeButtonPressed(object sender, EventArgs e)
     {
         this.Close();
     }
-
     public void minimizeButtonPressed(object sender, EventArgs e)
     {
         this.WindowState = FormWindowState.Minimized;
     }
-
     private static void UpdateYearAndMonth()
     {
         int currentYearInt = DateTime.Now.Year;
-        int currentMonthInt = DateTime.Now.Month+1;
+        int currentMonthInt = DateTime.Now.Month + 1;
 
         string currentYear = currentYearInt.ToString();
         DatabaseConnection.InsertYear(currentYearInt);
+
         string[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
         for (int i = 0; i < currentMonthInt; i++)
         {
             DatabaseConnection.InsertMonth(months[i], currentYearInt);
@@ -270,11 +384,16 @@ public partial class Form1 : Form
             .Select(month => DatabaseConnection.GetMonthId(month, currentYear))
             .ToList();
 
-        /* foreach (var monthId in monthIdsCurrentYear)
+        /* for (int i = 0; i < currentMonthInt; i++)
         {
-            DatabaseConnection.InsertItem("Rent", "Apartment rent", 1000, "Expense", monthId);
-            DatabaseConnection.InsertItem("Groceries", "Weekly groceries", 200, "Expense", monthId);
-            DatabaseConnection.InsertItem("Salary", "Monthly salary", 3000, "Income", monthId);
+            string monthName = months[i];
+            DatabaseConnection.InsertMonth(monthName, currentYearInt);
+
+            int monthId = DatabaseConnection.GetMonthId(monthName, currentYear);
+
+            DatabaseConnection.InsertItem("Rent", "Expense", 1000, "Monthly Rent for the house", monthName, monthId);
+            DatabaseConnection.InsertItem("Groceries", "Expense", 200, "Food", monthName, monthId);
+            DatabaseConnection.InsertItem("Salary", "Income", 3000, "Dog walking", monthName, monthId);
         } */
     }
 }

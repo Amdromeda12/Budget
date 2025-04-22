@@ -36,9 +36,10 @@ public class DatabaseConnection
             CREATE TABLE IF NOT EXISTS Items (
                 Id INTEGER PRIMARY KEY,
                 Name TEXT NOT NULL,
-                Description TEXT,
-                Amount REAL NOT NULL,
                 Type TEXT CHECK(Type IN ('Income', 'Expense')),
+                Amount REAL NOT NULL,
+                Description TEXT,
+                Month_Name TEXT NOT NULL,
                 Month_Id INTEGER NOT NULL,
                 FOREIGN KEY (Month_Id) REFERENCES Months(Id) ON DELETE CASCADE
             );
@@ -203,6 +204,65 @@ public class DatabaseConnection
         }
         return null;
     }
+    public static List<Month> GetMonthData2()
+    {
+        List<Month> months = new List<Month>();
+        string connectionString = "Data Source=budget.db;Version=3;";
+
+        using (SQLiteConnection conn = new SQLiteConnection(connectionString))
+        {
+            conn.Open();
+            string sql = "SELECT * FROM Months";
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
+            {
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        months.Add(new Month(
+                        reader["Name"].ToString(),
+                        Convert.ToInt32(reader["Year_Id"]),
+                        Convert.ToDouble(reader["Income"]),
+                        Convert.ToDouble(reader["Outcome"])
+                    ));
+                    }
+                }
+            }
+            return months;
+        }
+    }
+
+    public static List<Item> GetItemData()
+    {
+        List<Item> items = new List<Item>();
+        string connectionString = "Data Source=budget.db;Version=3;";
+
+        using (SQLiteConnection conn = new SQLiteConnection(connectionString))
+        {
+            conn.Open();
+            string sql = "SELECT * FROM Items";
+            using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
+            {
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        items.Add(new Item(
+                            reader["Name"].ToString(),
+                            reader["Type"].ToString(),
+                            Convert.ToDouble(reader["Amount"]),
+                            reader["Description"].ToString(),
+                            reader["Month_Name"].ToString(),
+                            Convert.ToInt32(reader["Month_Id"])
+
+                        ));
+                    }
+                }
+            }
+            return items;
+        }
+    }
+
     public static List<string> GetYearData()
     {
         List<string> years = new List<string>();
@@ -252,19 +312,20 @@ public class DatabaseConnection
             }
         }
     }
-    public static void InsertItem(string name, string description, double amount, string type, int monthId)
+    public static void InsertItem(string name, string type, double amount, string description,string month_Name, int monthId)
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = "INSERT INTO Items (Name, Description, Amount, Type, Month_Id) VALUES (@name, @desc, @amt, @type, @monthId)";
+            string sql = "INSERT INTO Items (Name, Type, Amount, Description, Month_Name, Month_Id) VALUES (@name, @type, @amt, @desc, @monthname, @monthId)";
             using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@desc", description);
-                cmd.Parameters.AddWithValue("@amt", amount);
                 cmd.Parameters.AddWithValue("@type", type);
+                cmd.Parameters.AddWithValue("@amt", amount);
+                cmd.Parameters.AddWithValue("@desc", description);
+                cmd.Parameters.AddWithValue("@monthname", month_Name);
                 cmd.Parameters.AddWithValue("@monthId", monthId);
                 cmd.ExecuteNonQuery();
             }

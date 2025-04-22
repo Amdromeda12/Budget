@@ -21,6 +21,7 @@ public class Form1UI
     public Month currentMonth;
     public ComboBox dropdown1 { get; private set; }
     public ComboBox dropdown2 { get; private set; }
+    public ComboBox CRUD { get; private set; }
 
     public Label one = new Label();
     public Label two = new Label();
@@ -33,6 +34,7 @@ public class Form1UI
     public Button add { get; private set; }
     public Button edit { get; private set; }
     public Button remove { get; private set; }
+    public DataTable table2 { get; private set; }
 
     public static readonly List<string> monthOrder = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
     private FlowLayoutPanel container;
@@ -276,43 +278,6 @@ public class Form1UI
             Visible = true
         };
 
-        Panel total = new Panel
-        {
-            Name = "total",
-            Width = 300,
-            Height = 250,
-            BackColor = Color.Gray
-        };
-
-        page2.Resize += (s, e) =>
-        {
-            int padding = 20;
-
-            total.Location = new Point(
-                page2.Width - total.Width - padding,
-                padding
-            );
-        };
-
-        total.Location = new Point(
-            (page2.Width - total.Width) / 2,
-            (page2.Height - total.Height) / 2
-        );
-
-        Label input = new Label { Name = "input", Width = 200, Height = 100, Text = "IN: 1000" };
-        input.Font = new Font(input.Font.FontFamily, 30);
-
-        Label output = new Label { Name = "output", Width = 200, Height = 100, Text = "OUT: 500" };
-        output.Font = new Font(output.Font.FontFamily, 30);
-
-        input.Location = new Point(50, 50);
-        output.Location = new Point(50, 150);
-
-
-        page2.Controls.Add(total);
-
-        total.Controls.Add(input);
-        total.Controls.Add(output);
 
 
         //TODO: SKAPA FUNTION TILL KNAPPARNA
@@ -327,7 +292,7 @@ public class Form1UI
         int totalWidth = add.Width * 3 + 20 * 2;
 
         int startX = (page2.Width - totalWidth) / 2 + 300;
-        int centerY = (page2.Height - add.Height) / 2 + 100;
+        int centerY = (page2.Height - add.Height) / 3;
 
         add.Location = new Point(startX, centerY);
         edit.Location = new Point(startX + add.Width + 250, centerY);
@@ -337,33 +302,37 @@ public class Form1UI
         page2.Controls.Add(edit);
         page2.Controls.Add(remove);
 
+        CRUD = new ComboBox
+        {
+            Name = "CRUD",
+            Width = 250,
+            Height = 40,
+            Font = new Font("Arial", 16),
+            DropDownStyle = ComboBoxStyle.DropDownList
+        };
 
+        CRUD.Items.AddRange(new string[] { "Year", "Month", "Item" });
+        int spacing = 20;
+        int dropdownY = centerY - CRUD.Height - spacing - 80;
+        CRUD.Location = new Point(edit.Location.X, dropdownY);
+        page2.Controls.Add(CRUD);
 
         //TODO: Fixa dessa saker så det blir bra 
         DataGridView dgv = new DataGridView
         {
             Name = "dataGrid",
             Dock = DockStyle.Bottom,
-            Height = 550,
+            Height = 700,
             AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
             ReadOnly = true,
             AllowUserToAddRows = false
         };
         page2.Controls.Add(dgv);
 
-        DataTable table2 = new DataTable();
-
-/* 
-        table2.Columns.Add("ID", typeof(int));
-        table2.Columns.Add("Name", typeof(string));
-        table2.Columns.Add("Email", typeof(string));
-
-        table2.Rows.Add(1, "Alice", "alice@example.com");
-        table2.Rows.Add(2, "Bob", "bob@example.com");
-        table2.Rows.Add(3, "Charlie", "charlie@example.com");
+        table2 = new DataTable();
         dgv.DataSource = table2;
         page2.Controls.Add(dgv);
-         */
+
         //
 
 
