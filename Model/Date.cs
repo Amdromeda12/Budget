@@ -1,6 +1,6 @@
 public class Month
 {
-    public int Id {get;}
+    public int Id { get; }
     public string Name { get; }
     public int YearId { get; }
     public double Income { get; }

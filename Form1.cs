@@ -44,48 +44,44 @@ public partial class Form1 : Form
         }
 
         design.populateYears();
-
-        using (var modal = new AddModal())
-        {
-            var result = modal.ShowDialog(this);
-            if (result == DialogResult.OK)
-            {
-                string name = modal.Name;
-                string type = modal.Type;
-                double amount = modal.Amount;
-                string description = modal.Description;
-                string month = modal.Month?.Substring(0, 3);
-                int year = modal.Year;
-
-                DatabaseConnection.InsertItem(name, type, amount, description, month, year);
-
-            }
-        }
     }
 
-    public string SelectedType;
 
     private void removeButtonPressed(object? sender, EventArgs e)
     {
         MessageBox.Show("remove");
     }
     private void editButtonPressed(object? sender, EventArgs e)
+
     {
         MessageBox.Show("edit");
     }
+    public string SelectedType;
     private void addButtonPressed(object? sender, EventArgs e)
     {
-        string target = sender.text;
-        switch(target)
-            case "Year":
-
-                break;
-            case "Month":
-                break;
-            case "Item":
-                using (var modal = new AddModal())
-                {
-                    var result = modal.ShowDialog(this);
+        using (var modal = new AddModal(SelectedType))
+        {
+            var result = modal.ShowDialog(this);
+            switch (SelectedType)
+            {
+                case "Year":
+                    if (result == DialogResult.OK)
+                    {
+                        int year = modal.Year;
+                        DatabaseConnection.InsertYear(year);
+                    }
+                    updateCRUD(1);
+                    break;
+                case "Month":
+                    if (result == DialogResult.OK)
+                    {
+                        string month = modal.Month?.Substring(0, 3);
+                        int year = modal.Year;
+                        DatabaseConnection.InsertMonth(month, year);
+                    }
+                    updateCRUD(2);
+                    break;
+                case "Item":
                     if (result == DialogResult.OK)
                     {
                         string name = modal.Name;
@@ -95,14 +91,16 @@ public partial class Form1 : Form
                         string month = modal.Month?.Substring(0, 3);
                         int year = modal.Year;
 
-                        DatabaseConnection.InsertItem(name, type, amount, description, month, year);
-                        updateCRUD(3);
+                        int targetmonthId = DatabaseConnection.GetMonthId(month, year.ToString());
+                        DatabaseConnection.InsertItem(name, type, amount, description, month, targetmonthId);
                     }
-                }
-                break;
-                //DatabaseConnection.InsertItem("Rent", "Expense", 1000, "Monthly Rent for the house", monthName, monthId);
+                    updateCRUD(3);
+                    break;
+            }
         }
     }
+
+
     private void flipperPressed(object? sender, EventArgs e)
     {
         design.page2.Visible = !design.page2.Visible;
