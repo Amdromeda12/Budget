@@ -13,6 +13,7 @@ public partial class Form1 : Form
     //Edit knapp visible False har också ingen function
     //TODO: "Item" i CRUD skall ha ett månad och år fält, just nu har den bara 1
     //TODO: "Year" i CRUD skall ha både income och outcome
+    //efter saker inlagda från CRUD view:n behöver starta om program
 
     private Form1UI design;  // Separera UI och logic
     private Button? previousButton = null;

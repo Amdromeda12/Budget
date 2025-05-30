@@ -13,3 +13,4 @@ Release/
 *.suo
 *.user
 *.csproj.user
+*.db
