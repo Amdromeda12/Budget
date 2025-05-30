@@ -228,7 +228,7 @@ public partial class Form1 : Form
                 point.SetValueY(outcome);
                 point.Color = Color.Yellow;
 
-                point.Label = $"Outcome: {response.Outcome}";
+                point.Label = $"Expense: {response.Outcome}";
             }
             else if (point.AxisLabel == "Category C")
             {
