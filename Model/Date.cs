@@ -1,14 +1,15 @@
 public class Month
 {
-    public int Id { get; }
+    public string Id { get; }
     public string Name { get; }
     public int YearId { get; }
     public double Income { get; }
     public double Outcome { get; }
 
 
-    public Month(string name, int yearId, double income, double outcome)
+    public Month(string id, string name, int yearId, double income, double outcome)
     {
+        Id = id;
         Name = name;
         YearId = yearId;
         Income = income;
@@ -22,6 +23,12 @@ public class Month
 }
 public class Year
 {
-    public int Id;
-    public string Year_Number;
+    public string Id { get; }
+    public string Year_Number { get; }
+
+    public Year(string id, string year_Number)
+    {
+        Id = id;
+        Year_Number = year_Number;
+    }
 }

@@ -10,8 +10,7 @@ public class DatabaseConnection
     public static List<Month> Comparelist1 { get; set; } = new List<Month>();           //Gör 2 listor som man kan sen jämnföra med varann för att få färger
     public static List<Month> Comparelist2 { get; set; } = new List<Month>();
 
-    //Kolla genom dessa och gör dom bättre
-    public static void InitializeDatabase() //Funkar
+    public static void InitializeDatabase() //Skapar databasen strukturen 
     {
         string connectionString = "Data Source=Budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
@@ -87,7 +86,7 @@ public class DatabaseConnection
         }
     }
 
-    public static bool InsertMonth(string name, int year_Id)
+    public static bool InsertMonth(string name, int year_Id)//Lägger in i databasen
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         try
@@ -110,7 +109,21 @@ public class DatabaseConnection
             return false;
         }
     }
+    public static void DeleteInDatabase(string id, string targetobject)//tar bort in i databasen
+    {
+        string connectionString = "Data Source=budget.db;Version=3;";
+        using (var connection = new SQLiteConnection(connectionString))
+        {
+            connection.Open();
+            string query = $"DELETE FROM {targetobject}s WHERE Id = @Id";
 
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                command.ExecuteNonQuery();
+            }
+        }
+    }
     public static bool InsertYear(int yearNumber)
     {
         string connectionString = "Data Source=budget.db;Version=3;";
@@ -133,16 +146,14 @@ public class DatabaseConnection
             return false;
         }
     }
-
-
-    public static void DisplayMonths(ComboItem date, bool dropdown2)
+    public static void GetMonthsFromYear(ComboItem date, bool dropdown2)
     {
         string connectionString = "Data Source=Budget.db;Version=3;";
 
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = "SELECT Name, Income, Outcome FROM Months WHERE Year_Id = @YearId;";
+            string sql = "SELECT * FROM Months WHERE Year_Id = @YearId;";
 
             using (SQLiteCommand command = new SQLiteCommand(sql, conn))
             {
@@ -156,6 +167,7 @@ public class DatabaseConnection
                     while (reader.Read())
                     {
                         var month = new Month(
+                            reader["Id"].ToString(),
                             reader["Name"].ToString(),
                             Convert.ToInt32(date.Text), // this is the yearId
                             Convert.ToDouble(reader["Income"]),
@@ -176,7 +188,7 @@ public class DatabaseConnection
             }
         }
     }
-    public static Month GetMonthData(string yearId, string monthName)
+    public static Month GetMonthData(string yearId, string monthName) //Får att som ligger i den valda månaden
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
@@ -193,6 +205,7 @@ public class DatabaseConnection
                     if (reader.Read())
                     {
                         return new Month(
+                            reader["Id"].ToString(),
                             reader["Name"].ToString(),
                             Convert.ToInt32(reader["Year_Id"]),
                             Convert.ToDouble(reader["Income"]),
@@ -204,7 +217,7 @@ public class DatabaseConnection
         }
         return null;
     }
-    public static List<Month> GetMonthData2()
+    public static List<Month> GetMonthData2() //Får en lista med alla månader och vad de innehåller för CRUD view:n
     {
         List<Month> months = new List<Month>();
         string connectionString = "Data Source=budget.db;Version=3;";
@@ -220,6 +233,7 @@ public class DatabaseConnection
                     while (reader.Read())
                     {
                         months.Add(new Month(
+                        reader["Id"].ToString(),
                         reader["Name"].ToString(),
                         Convert.ToInt32(reader["Year_Id"]),
                         Convert.ToDouble(reader["Income"]),
@@ -231,8 +245,7 @@ public class DatabaseConnection
             return months;
         }
     }
-
-    public static List<Item> GetItemData()
+    public static List<Item> GetItemData() //Får en lista med alla Föremål och vad de innehåller för CRUD view:n
     {
         List<Item> items = new List<Item>();
         string connectionString = "Data Source=budget.db;Version=3;";
@@ -248,6 +261,7 @@ public class DatabaseConnection
                     while (reader.Read())
                     {
                         items.Add(new Item(
+                            reader["Id"].ToString(),
                             reader["Name"].ToString(),
                             reader["Type"].ToString(),
                             Convert.ToDouble(reader["Amount"]),
@@ -262,16 +276,15 @@ public class DatabaseConnection
             return items;
         }
     }
-
-    public static List<string> GetYearData()
+    public static List<Year> GetYearData() //Får en lista med alla År och vad de innehåller för CRUD view:n
     {
-        List<string> years = new List<string>();
+        List<Year> years = new List<Year>();
         string connectionString = "Data Source=budget.db;Version=3;";
 
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
         {
             conn.Open();
-            string sql = "SELECT DISTINCT Year_Number FROM Years";
+            string sql = "SELECT * FROM Years";
 
             using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
             {
@@ -279,14 +292,15 @@ public class DatabaseConnection
                 {
                     while (reader.Read())
                     {
-                        years.Add(reader["Year_Number"].ToString());
+                        years.Add(new Year(reader["Id"].ToString(),
+                            reader["Year_Number"].ToString()));
                     }
                 }
             }
+            return years;
         }
-        return years;
     }
-    public static int GetMonthId(string monthName, string yearNumber)
+    public static int GetMonthId(string monthName, string yearNumber) //Hämtar Månads ID när man tar Månads namn + År nummer
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))
@@ -312,7 +326,7 @@ public class DatabaseConnection
             }
         }
     }
-    public static void InsertItem(string name, string type, double amount, string description,string month_Name, int monthId)
+    public static void InsertItem(string name, string type, double amount, string description, string month_Name, int monthId) //Lägger in föremål i databasen
     {
         string connectionString = "Data Source=budget.db;Version=3;";
         using (SQLiteConnection conn = new SQLiteConnection(connectionString))

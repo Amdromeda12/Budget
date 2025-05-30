@@ -6,27 +6,21 @@ using System.Data;
 
 public class Form1UI
 {
-    //  Fixa dropdown så det blir bättre
-    //  
-    //  
     public Chart chart1;
     public Series series { get; private set; }
-
     public Panel page2;
     public Chart chart2;
     public Series series2 { get; private set; }
-
+    public DataGridView CRUDView { get; private set; }
     private Form mainForm;
     public Panel bottomMain { get; private set; }
     public Month currentMonth;
     public ComboBox dropdown1 { get; private set; }
     public ComboBox dropdown2 { get; private set; }
     public ComboBox CRUD { get; private set; }
-
     public Label one = new Label();
     public Label two = new Label();
     public Label three = new Label();
-
     public Panel topBar { get; private set; }
     public Button closeButton { get; private set; }
     public Button minimizeButton { get; private set; }
@@ -35,12 +29,15 @@ public class Form1UI
     public Button edit { get; private set; }
     public Button remove { get; private set; }
     public DataTable table2 { get; private set; }
-
     public static readonly List<string> monthOrder = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
     private FlowLayoutPanel container;
     public FlowLayoutPanel Container => container;
     public Button[] BigButtons { get; private set; }
     public Button[] SmallButtons { get; private set; }
+    public Label IncomeLabel { get; private set; }
+    public Label ExpenseLabel { get; private set; }
+    public Label SavingsLabel { get; private set; }
+    public Label BalanceLabel { get; private set; }
 
     public Form1UI(Form form)
     {
@@ -62,7 +59,7 @@ public class Form1UI
         {
             Size = new Size(mainForm.Width, 40),
             Dock = DockStyle.Top,
-            BackColor = Color.Purple,               //Ändra till bra färg
+            BackColor = Color.Purple,
         };
 
         closeButton = new Button()
@@ -109,7 +106,7 @@ public class Form1UI
             Height = 50,
             Width = 100,
             DropDownStyle = ComboBoxStyle.DropDownList,
-            DisplayMember = "Text",      //Här är viktigt
+            DisplayMember = "Text",
         };
 
         dropdown2 = new ComboBox()
@@ -127,7 +124,7 @@ public class Form1UI
             Name = "flipper",
             Width = 200,
             Height = 200,
-            Text = "Click me",
+            Text = "Switch View",
             BackColor = Color.Brown,
             Anchor = AnchorStyles.None
         };
@@ -196,7 +193,6 @@ public class Form1UI
             };
             smallButton.FlatAppearance.BorderSize = 0;
             SmallButtons[i] = smallButton;
-            //
 
             //Add to parent
             parentPanel.Controls.Add(bigButton);
@@ -211,7 +207,6 @@ public class Form1UI
             Dock = DockStyle.Bottom,
             Height = 580
         };
-
 
         //Paj 1 och 2
         chart1 = new Chart()
@@ -229,7 +224,7 @@ public class Form1UI
             BorderColor = System.Drawing.Color.Black,
         };
 
-        chart1.Titles.Clear(); // Optional: clear existing titles
+        chart1.Titles.Clear();
         chart1.Titles.Add("Monthly Expenses Breakdown");
         chart1.Titles[0].Font = new Font("Arial", 14, FontStyle.Bold);
         chart1.Titles[0].ForeColor = Color.DarkBlue;
@@ -237,8 +232,8 @@ public class Form1UI
 
         series.Points.AddXY("Category A", 0);
         series.Points.AddXY("Category B", 0);
-        series.Points.AddXY("Category C", 0);        //Ändra denna till en överskott or underskott
-        //                                          Tex. Grön om det finns överskott eller röd om det är under
+        series.Points.AddXY("Category C", 0);        
+        //
 
         chart1.Series.Add(series);
         bottomMain.Controls.Add(chart1);
@@ -262,6 +257,61 @@ public class Form1UI
         series2.Points.AddXY("Category B", 0);
         series2.Points.AddXY("Category C", 0);
 
+        string[] titles = { "Income", "Expense", "Savings", "Balance" };
+        Label[] labelRefs = new Label[4];
+
+        var table3 = new TableLayoutPanel
+        {
+            RowCount = 4,
+            ColumnCount = 1,
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+        };
+
+        table3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        for (int i = 0; i < 4; i++)
+        {
+            table3.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            var innerPanel = new TableLayoutPanel
+            {
+                RowCount = 2,
+                ColumnCount = 1,
+                Dock = DockStyle.Fill,
+            };
+            innerPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            innerPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+
+            var titleLabel = new Label
+            {
+                Text = titles[i],
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+            };
+
+            var valueLabel = new Label
+            {
+                Font = new Font("Segoe UI", 14),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+            };
+
+            labelRefs[i] = valueLabel;
+
+            innerPanel.Controls.Add(titleLabel, 0, 0);
+            innerPanel.Controls.Add(valueLabel, 0, 1);
+
+            table3.Controls.Add(innerPanel, 0, i);
+        }
+        IncomeLabel = labelRefs[0];
+        ExpenseLabel = labelRefs[1];
+        SavingsLabel = labelRefs[2];
+        BalanceLabel = labelRefs[3];
+
+        //table3.GetControlFromPosition(0, 2).Visible = false;
+        table3.GetControlFromPosition(0, 3).Visible = false;
+
+        bottomMain.Controls.Add(table3);
         chart2.Series.Add(series2);
         bottomMain.Controls.Add(chart2);
 
@@ -275,15 +325,11 @@ public class Form1UI
             Width = 500,
             BackColor = ColorTranslator.FromHtml("#5a4d4d"),
             Dock = DockStyle.Fill,
-            Visible = true
+            Visible = false
         };
 
-
-
-        //TODO: SKAPA FUNTION TILL KNAPPARNA
-
         add = new Button { Name = "add", Height = 80, Width = 250, Text = "ADD", BackColor = Color.Gray };
-        edit = new Button { Name = "edit", Height = 80, Width = 250, Text = "EDIT", BackColor = Color.Gray };
+        edit = new Button { Name = "edit", Height = 80, Width = 250, Text = "EDIT", BackColor = Color.Gray, Visible = false };
         remove = new Button { Name = "remove", Height = 80, Width = 250, Text = "REMOVE", BackColor = Color.Gray };
         add.Font = new Font(add.Font.FontFamily, 30);
         edit.Font = new Font(edit.Font.FontFamily, 30);
@@ -317,8 +363,7 @@ public class Form1UI
         CRUD.Location = new Point(edit.Location.X, dropdownY);
         page2.Controls.Add(CRUD);
 
-        //TODO: Fixa dessa saker så det blir bra 
-        DataGridView dgv = new DataGridView
+        CRUDView = new DataGridView
         {
             Name = "dataGrid",
             Dock = DockStyle.Bottom,
@@ -327,11 +372,13 @@ public class Form1UI
             ReadOnly = true,
             AllowUserToAddRows = false
         };
-        page2.Controls.Add(dgv);
+
+        page2.Controls.Add(CRUDView);
 
         table2 = new DataTable();
-        dgv.DataSource = table2;
-        page2.Controls.Add(dgv);
+        CRUDView.DataSource = table2;
+
+        page2.Controls.Add(CRUDView);
 
         //
 
@@ -342,8 +389,6 @@ public class Form1UI
             RowCount = 1,
             Dock = DockStyle.Fill,
         };
-
-
         table.Controls.Add(one, 0, 0);
         table.Controls.Add(two, 1, 0);
         table.Controls.Add(three, 2, 0);
@@ -356,22 +401,20 @@ public class Form1UI
         mainPanel.Controls.Add(container);
         mainPanel.Controls.Add(contentWrapper);
 
-
-
         mainForm.Controls.Add(page2);
         mainForm.Controls.Add(mainPanel);
         mainForm.Controls.Add(sidebar);
         mainForm.Controls.Add(topBar);
     }
-    public void populateYears()
+    public void populateDropDownWithYear()
     {
-        List<string> result = DatabaseConnection.GetYearData();
+        List<Year> result = DatabaseConnection.GetYearData();
 
         List<ComboItem> comboItems1 = new List<ComboItem>();
 
         for (int i = 0; i < result.Count; i++)
         {
-            comboItems1.Add(new ComboItem { ID = i, Text = result[i] });
+            comboItems1.Add(new ComboItem { ID = i, Text = result[i].Year_Number });
         }
         List<ComboItem> comboItems2 = comboItems1
        .Select(item => new ComboItem { ID = item.ID, Text = item.Text })

@@ -5,21 +5,32 @@ using Database.DatabaseConnection;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Budget;
+
 public partial class Form1 : Form
 {
-    private Form1UI design;
+    //Tror flera database connections skulle kunna ändra / ta bort / sättas ihop
+    //DeleteInDatabase: har ett "s" efter för gjorde fel hur stringet skickas runt
+    //Edit knapp visible False har också ingen function
+    //TODO: "Item" i CRUD skall ha ett månad och år fält, just nu har den bara 1
+    //TODO: "Year" i CRUD skall ha både income och outcome
+
+    private Form1UI design;  // Separera UI och logic
     private Button? previousButton = null;
     private Button? previousButton2 = null;
-    private string currentYear;
-    private string currentYear2;
-    private bool dragging = false;
-    private Point startPoint = new Point(0, 0);
+    private string currentYear; //Dropdown månads val
+    private string currentYear2; //-||-
+    private bool dragging = false; //Håller koll på musen
+    private Point startPoint = new Point(0, 0); //-||-
     public Form1()
     {
+        //Sätter igång med datasen 
         DatabaseConnection.InitializeDatabase();
         UpdateYearAndMonth();
+        //
 
         design = new Form1UI(this);
+
+        // Ger funktion till knappar ifrån design
         design.topBar.MouseDown += TopBarWindowDrag;
         design.closeButton.Click += closeButtonPressed;
         design.minimizeButton.Click += minimizeButtonPressed;
@@ -27,12 +38,13 @@ public partial class Form1 : Form
         design.add.Click += addButtonPressed;
         design.edit.Click += editButtonPressed;
         design.remove.Click += removeButtonPressed;
-        design.dropdown1.SelectedIndexChanged += DropDownChanged;
-        design.dropdown2.SelectedIndexChanged += DropDownChanged;
+        design.dropdown1.SelectedIndexChanged += MonthDropDownSelect;
+        design.dropdown2.SelectedIndexChanged += MonthDropDownSelect;
         design.CRUD.SelectedIndexChanged += CRUDChanged;
         this.MouseDown += TopBarWindowDrag;
         this.MouseMove += TopBarWindowDragMove;
         this.MouseUp += TopBarWindowDragFunction;
+        design.CRUDView.CellClick += CRUDView_CellClick;
 
         foreach (Button btn in design.BigButtons)
         {
@@ -42,83 +54,141 @@ public partial class Form1 : Form
         {
             btn.Click += MonthButton;
         }
+        //
 
-        design.populateYears();
+        design.populateDropDownWithYear();
     }
-
-
+    public string SelectedType;
+    public string CellId;
+    private void CRUDView_CellClick(object sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0)
+        {
+            DataGridViewRow selectedRow = design.CRUDView.Rows[e.RowIndex];
+            CellId = selectedRow.Cells["Id"].Value?.ToString();
+        }
+    }
     private void removeButtonPressed(object? sender, EventArgs e)
     {
-        MessageBox.Show("remove");
-    }
-    private void editButtonPressed(object? sender, EventArgs e)
+        DialogResult result = MessageBox.Show(
+        "Are you sure you want to delete?",
+        "Confirmation",
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Question
+    );
 
+        if (result == DialogResult.Yes)
+        {
+            DatabaseConnection.DeleteInDatabase(CellId, SelectedType);
+            if (SelectedType == "Year") updateCRUD(1);
+            if (SelectedType == "Month") updateCRUD(2);
+            if (SelectedType == "Item") updateCRUD(3);
+        }
+    }
+    private void editButtonPressed(object? sender, EventArgs e) //Inte använd
     {
         MessageBox.Show("edit");
     }
-    public string SelectedType;
-    private void addButtonPressed(object? sender, EventArgs e)
+    private void addButtonPressed(object? sender, EventArgs e) //I CRUD Addbutton, Skapa en ny i dropdown, så om man har year så skapar man ett nytt år, om man väljer Month och så gör man en månad.
     {
-        using (var modal = new AddModal(SelectedType))
+        try
         {
-            var result = modal.ShowDialog(this);
-            switch (SelectedType)
+            if (SelectedType == null) { return; }
+            using (var modal = new AddModal(SelectedType))
             {
-                case "Year":
-                    if (result == DialogResult.OK)
-                    {
-                        int year = modal.Year;
-                        DatabaseConnection.InsertYear(year);
-                    }
-                    updateCRUD(1);
-                    break;
-                case "Month":
-                    if (result == DialogResult.OK)
-                    {
-                        string month = modal.Month?.Substring(0, 3);
-                        int year = modal.Year;
-                        DatabaseConnection.InsertMonth(month, year);
-                    }
-                    updateCRUD(2);
-                    break;
-                case "Item":
-                    if (result == DialogResult.OK)
-                    {
-                        string name = modal.Name;
-                        string type = modal.Type;
-                        double amount = modal.Amount;
-                        string description = modal.Description;
-                        string month = modal.Month?.Substring(0, 3);
-                        int year = modal.Year;
+                var result = modal.ShowDialog(this);
+                switch (SelectedType)
+                {
+                    case "Year":
+                        if (result == DialogResult.OK)
+                        {
+                            int year = modal.Year;
+                            DatabaseConnection.InsertYear(year);
+                        }
+                        updateCRUD(1);
+                        break;
+                    case "Month":
+                        if (result == DialogResult.OK)
+                        {
+                            string month = modal.Month?.Substring(0, 3);
+                            int year = modal.Year;
+                            DatabaseConnection.InsertMonth(month, year);
+                        }
+                        updateCRUD(2);
+                        break;
+                    case "Item":
+                        if (result == DialogResult.OK)
+                        {
+                            string name = modal.Name;
+                            string type = modal.Type;
+                            double amount = modal.Amount;
+                            string description = modal.Description;
+                            string month = modal.Month?.Substring(0, 3);
+                            int year = modal.Year;
 
-                        int targetmonthId = DatabaseConnection.GetMonthId(month, year.ToString());
-                        DatabaseConnection.InsertItem(name, type, amount, description, month, targetmonthId);
-                    }
-                    updateCRUD(3);
-                    break;
+                            int targetmonthId = DatabaseConnection.GetMonthId(month, year.ToString());
+                            DatabaseConnection.InsertItem(name, type, amount, description, month, targetmonthId);
+                        }
+                        updateCRUD(3);
+                        break;
+                }
             }
         }
+        catch (Exception)
+        {
+            MessageBox.Show("Add Failed!");
+        }
     }
-
-
     private void flipperPressed(object? sender, EventArgs e)
     {
         design.page2.Visible = !design.page2.Visible;
     }
-
-    private void MonthButton(object sender, EventArgs e)
+    //<
+    double firstIncome = 0;
+    double secondIncome = 0;
+    double firstExpense = 0;
+    double secondExpense = 0;
+    double firstTotal = 0;
+    double secondTotal = 0;
+    private void MonthButton(object sender, EventArgs e) //I första menyn, för att jämföra olika valda månader
     {
-        //En "DeSelect" if sats om den redan är "Selected"
         Button clickedButton = sender as Button;
         bool isSpecial = clickedButton.Name.Contains("sB");
-
         string year = isSpecial ? currentYear2 : currentYear;
+
         Month response = DatabaseConnection.GetMonthData(year, clickedButton.Text);
-        UpdateChart(response, isSpecial);
+        UpdatePieChartColor(response, isSpecial);
+
+        if (isSpecial)
+        {
+            secondIncome = response.Income;
+            secondExpense = response.Outcome;
+            secondTotal = secondIncome - secondExpense;
+        }
+        else
+        {
+            firstIncome = response.Income;
+            firstExpense = response.Outcome;
+            firstTotal = firstIncome - firstExpense;
+        }
+        UpdateLabel(design.IncomeLabel, firstIncome, secondIncome);
+        UpdateLabel(design.ExpenseLabel, firstExpense, secondExpense);
+        UpdateLabel(design.SavingsLabel, firstTotal, secondTotal);
+        //design.BalanceLabel.Text = response.Income.ToString();    //Används inte
         HandleButtonHighlight(clickedButton, isSpecial);
     }
-
-    private void HandleButtonHighlight(Button clickedButton, bool isSpecial)
+    private string FormatDifference(double firstValue, double secondValue)
+    {
+        double diff = firstValue - secondValue;
+        string suffix = diff < 0 ? " Less" : diff > 0 ? " More" : "";
+        return diff.ToString("C") + suffix;
+    }
+    void UpdateLabel(Label label, double firstValue, double secondValue)
+    {
+        label.Text = FormatDifference(firstValue, secondValue);
+    }
+    // Allt detta hör ihop>
+    private void HandleButtonHighlight(Button clickedButton, bool isSpecial) //Ökar bordersize på valda knappar för att se vilka som är valda, 1 uppe 1 nere
     {
         ref Button previous = ref isSpecial ? ref previousButton2 : ref previousButton;
         if (previous != null)
@@ -129,8 +199,7 @@ public partial class Form1 : Form
         clickedButton.FlatAppearance.BorderColor = Color.Black;
         previous = clickedButton;
     }
-
-    private void UpdateChart(Month response, bool isSpecial)
+    private void UpdatePieChartColor(Month response, bool isSpecial) //Uppdaterar färgen på pajgrafen när man jämför måndader
     {
         var chart = isSpecial ? design.chart2 : design.chart1;
 
@@ -176,8 +245,7 @@ public partial class Form1 : Form
             }
         }
     }
-
-    private void DropDownChanged(object sender, EventArgs e)
+    private void MonthDropDownSelect(object sender, EventArgs e) //Updaterar beonde på vad man väljer på första sidan
     {
         ComboBox cmb = (ComboBox)sender;
         bool dropdown2 = cmb.Name.Contains("dropdown2");
@@ -190,10 +258,9 @@ public partial class Form1 : Form
         else
             currentYear2 = selectedValue.Text;
 
-        DatabaseConnection.DisplayMonths(selectedValue, dropdown2);
+        DatabaseConnection.GetMonthsFromYear(selectedValue, dropdown2);
         UpdateButtonColor(dropdown2);
     }
-
     private void CRUDChanged(object sender, EventArgs e)
     {
         ComboBox cmb = (ComboBox)sender;
@@ -213,23 +280,22 @@ public partial class Form1 : Form
                 break;
         }
     }
-
-    private void updateCRUD(int target)
+    private void updateCRUD(int target) //Hämtar relevant information av det man väljer i andra sidans dropdown
     {
         switch (target)
         {
             case 1:
-                List<string> yearData = DatabaseConnection.GetYearData();
+                List<Year> yearData = DatabaseConnection.GetYearData();
 
                 design.table2.Rows.Clear();
                 design.table2.Columns.Clear();
-
+                design.table2.Columns.Add("Id");
                 design.table2.Columns.Add("Years");
-                // Add year values to the table
                 foreach (var year in yearData)
                 {
-                    design.table2.Rows.Add(year);
+                    design.table2.Rows.Add(year.Id, year.Year_Number);
                 }
+                design.CRUDView.Columns[0].FillWeight = 10;
 
                 break;
 
@@ -239,6 +305,7 @@ public partial class Form1 : Form
                 design.table2.Rows.Clear();
                 design.table2.Columns.Clear();
 
+                design.table2.Columns.Add("Id");
                 design.table2.Columns.Add("Month");
                 design.table2.Columns.Add("Year");
                 design.table2.Columns.Add("Income");
@@ -246,8 +313,9 @@ public partial class Form1 : Form
 
                 foreach (var month in monthData)
                 {
-                    design.table2.Rows.Add(month.Name, month.YearId, month.Income, month.Outcome);
+                    design.table2.Rows.Add(month.Id, month.Name, month.YearId, month.Income, month.Outcome);
                 }
+                design.CRUDView.Columns[0].FillWeight = 10;
                 break;
 
             case 3:
@@ -256,6 +324,7 @@ public partial class Form1 : Form
                 design.table2.Rows.Clear();
                 design.table2.Columns.Clear();
 
+                design.table2.Columns.Add("Id");
                 design.table2.Columns.Add("Name");
                 design.table2.Columns.Add("Type");
                 design.table2.Columns.Add("Amount");
@@ -264,13 +333,13 @@ public partial class Form1 : Form
 
                 foreach (var item in itemData)
                 {
-                    design.table2.Rows.Add(item.Name, item.Type, item.Amount, item.Description, item.Month_Name);
+                    design.table2.Rows.Add(item.Id, item.Name, item.Type, item.Amount, item.Description, item.Month_Name);
                 }
+                design.CRUDView.Columns[0].FillWeight = 10;
                 break;
         }
     }
-
-    private void UpdateButtonColor(bool dropdown2)
+    private void UpdateButtonColor(bool dropdown2) //Uppdaterar färgen på knappar utefter om de har mer eller mindre än den andra månaden vald
     {
         var firstMonth = dropdown2 ? DatabaseConnection.Comparelist2 : DatabaseConnection.Comparelist1;
         var buttonPrefix = dropdown2 ? "sB" : "bB";
@@ -333,7 +402,7 @@ public partial class Form1 : Form
             }
         }
     }
-    public void TopBarWindowDrag(object sender, MouseEventArgs e)
+    public void TopBarWindowDrag(object sender, MouseEventArgs e) //För att göra det mörligt att dra fönstret i Custom topbaren
     {
         if (e.Button == MouseButtons.Left)
         {
@@ -342,12 +411,12 @@ public partial class Form1 : Form
             this.Capture = true;
         }
     }
-    public void TopBarWindowDragFunction(object sender, MouseEventArgs e)
+    public void TopBarWindowDragFunction(object sender, MouseEventArgs e) //-||-
     {
         dragging = false;
         this.Capture = false;
     }
-    private void TopBarWindowDragMove(object sender, MouseEventArgs e)
+    private void TopBarWindowDragMove(object sender, MouseEventArgs e) //-||-
     {
         if (dragging)
         {
@@ -363,7 +432,7 @@ public partial class Form1 : Form
     {
         this.WindowState = FormWindowState.Minimized;
     }
-    private static void UpdateYearAndMonth()
+    private static void UpdateYearAndMonth() //Auto skapa DB inlägg för nuvarande år och nuvarande månad + 1 in i databasen
     {
         int currentYearInt = DateTime.Now.Year;
         int currentMonthInt = DateTime.Now.Month + 1;
@@ -382,16 +451,12 @@ public partial class Form1 : Form
             .Select(month => DatabaseConnection.GetMonthId(month, currentYear))
             .ToList();
 
-        /* for (int i = 0; i < currentMonthInt; i++)
+        for (int i = 0; i < currentMonthInt; i++)
         {
             string monthName = months[i];
             DatabaseConnection.InsertMonth(monthName, currentYearInt);
 
             int monthId = DatabaseConnection.GetMonthId(monthName, currentYear);
-
-            DatabaseConnection.InsertItem("Rent", "Expense", 1000, "Monthly Rent for the house", monthName, monthId);
-            DatabaseConnection.InsertItem("Groceries", "Expense", 200, "Food", monthName, monthId);
-            DatabaseConnection.InsertItem("Salary", "Income", 3000, "Dog walking", monthName, monthId);
-        } */
+        }
     }
 }
